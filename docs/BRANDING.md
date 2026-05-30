@@ -19,7 +19,7 @@ Brand = **neon orange**. Defined as theme tokens in `src/app/globals.css`
 | `brand-add-active` | `#CD4B00` | Add button active |
 
 - Text selection: `#FF7A18` @ 30% (`::selection` in globals).
-- `primary-foreground` is near-black (`oklch(0.205 0 0)`) for legibility on orange.
+- `primary-foreground` is white (`oklch(0.985 0 0)`) — orange buttons use white text.
 - `accent` is intentionally a neutral gray (subtle hover bg) — orange is reserved
   for true primary actions, not every hover.
 - Theme defaults to **dark** (`next-themes`, `defaultTheme="dark"`).
