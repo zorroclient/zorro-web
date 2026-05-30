@@ -2,15 +2,22 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { mainNav, siteConfig } from "@/lib/nav";
+import { createClient } from "@/lib/supabase/server";
+import { signOut } from "@/lib/auth-actions";
 
-export function SiteHeader() {
+export async function SiteHeader() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+    <header className="sticky top-0 z-50 w-full border-b border-border/60 bg-background/80 backdrop-blur supports-backdrop-filter:bg-background/60">
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between px-4 sm:px-6">
         <div className="flex items-center gap-10">
           <Link href="/" className="flex items-center gap-2.5 font-semibold">
             <Image
-              src="/brand/logo.png"
+              src="/brand/favicon.ico"
               alt={`${siteConfig.name} logo`}
               width={44}
               height={44}
@@ -34,12 +41,27 @@ export function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
-          <Button asChild variant="ghost">
-            <Link href="/login">Log in</Link>
-          </Button>
-          <Button asChild>
-            <Link href="/signup">Get Zorro</Link>
-          </Button>
+          {user ? (
+            <>
+              <Button asChild variant="ghost">
+                <Link href="/account">Account</Link>
+              </Button>
+              <form action={signOut}>
+                <Button type="submit" variant="outline">
+                  Log out
+                </Button>
+              </form>
+            </>
+          ) : (
+            <>
+              <Button asChild variant="ghost">
+                <Link href="/login">Log in</Link>
+              </Button>
+              <Button asChild>
+                <Link href="/signup">Get Zorro</Link>
+              </Button>
+            </>
+          )}
         </div>
       </div>
     </header>
