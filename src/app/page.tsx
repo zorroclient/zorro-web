@@ -1,7 +1,21 @@
 import Link from "next/link";
-import { Globe, SlidersHorizontal, RefreshCw, Gauge, Ghost } from "lucide-react";
+import {
+  Globe,
+  SlidersHorizontal,
+  RefreshCw,
+  Gauge,
+  Ghost,
+  Crosshair,
+  Move,
+  Eye,
+  Boxes,
+  Wrench,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ZorroMockup } from "@/components/zorro-mockup";
+import { PricingPlans } from "@/components/pricing-plans";
+import { FaqSection } from "@/components/faq-section";
+import { productFaqs } from "@/lib/faq";
 import { siteConfig } from "@/lib/nav";
 
 const compatibility = ["Lunar", "Vanilla", "Cosmic", "+ more"];
@@ -17,7 +31,7 @@ const features = [
     icon: SlidersHorizontal,
     title: "Dialed-in control",
     description:
-      "Dozens of modules across combat, movement, and visuals — each tunable down to the detail.",
+      "20+ modules across combat, movement, and visuals — each tunable down to the detail.",
   },
   {
     icon: RefreshCw,
@@ -32,6 +46,50 @@ const features = [
       "Engineered to stay smooth and out of your way — no frame drops, no babysitting.",
   },
 ];
+
+// Canonical lineup — mirrors the mod registry in ghoster
+// (src/dll/runtime/factories/mod_factory.cpp). Keep in sync with the build.
+const moduleGroups = [
+  {
+    icon: Crosshair,
+    category: "Combat",
+    modules: [
+      "Reach",
+      "Velocity",
+      "Aim Assist",
+      "Kill Aura",
+      "Autoclicker",
+      "AutoPot",
+      "RightClicker",
+      "WTap",
+    ],
+  },
+  {
+    icon: Move,
+    category: "Movement",
+    modules: ["Timer", "Flight", "FastBridge", "Keep Sprint"],
+  },
+  {
+    icon: Eye,
+    category: "Visual",
+    modules: ["Fullbright", "ESP", "Tracers", "NameTags"],
+  },
+  {
+    icon: Boxes,
+    category: "World",
+    modules: ["Block Search", "Chest ESP", "Spawner ESP", "Container ESP"],
+  },
+  {
+    icon: Wrench,
+    category: "Utility",
+    modules: ["AutoFish"],
+  },
+];
+
+const totalModules = moduleGroups.reduce(
+  (sum, g) => sum + g.modules.length,
+  0,
+);
 
 export default function Home() {
   return (
@@ -152,18 +210,101 @@ export default function Home() {
         </div>
       </section>
 
+      {/* Inside the client */}
+      <section id="modules" className="border-y border-border/60 bg-card/20">
+        <div className="mx-auto max-w-5xl px-4 py-20 sm:px-6">
+          <div className="mx-auto max-w-2xl text-center">
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Inside the client
+            </h2>
+            <p className="mt-4 text-muted-foreground">
+              {totalModules} modules across five categories — each fully
+              configurable and tuned to stay smooth.
+            </p>
+          </div>
+          <div className="mt-12 flex flex-wrap justify-center gap-5">
+            {moduleGroups.map((group) => (
+              <div
+                key={group.category}
+                className="w-full rounded-xl border border-border/60 bg-card/40 p-6 transition-colors hover:border-brand/50 sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)]"
+              >
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+                    <group.icon className="h-5 w-5" />
+                  </span>
+                  <div>
+                    <h3 className="font-heading font-semibold leading-tight">
+                      {group.category}
+                    </h3>
+                    <p className="text-xs text-muted-foreground">
+                      {group.modules.length}{" "}
+                      {group.modules.length === 1 ? "module" : "modules"}
+                    </p>
+                  </div>
+                </div>
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {group.modules.map((m) => (
+                    <span
+                      key={m}
+                      className="rounded-md border border-border/60 bg-muted/40 px-2.5 py-1 text-xs text-foreground/80"
+                    >
+                      {m}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </div>
+          <p className="mt-8 text-center text-sm text-muted-foreground">
+            Every module is included on every plan — no tiered feature gates.
+          </p>
+        </div>
+      </section>
+
+      {/* Pricing */}
+      <section id="pricing" className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
+        <div className="mx-auto max-w-2xl text-center">
+          <h2 className="text-3xl font-bold sm:text-4xl">
+            Simple, honest pricing
+          </h2>
+          <p className="mt-4 text-muted-foreground">
+            One subscription unlocks everything. Pick how long you want it —
+            longer plans cost less per month.
+          </p>
+        </div>
+        <PricingPlans className="mt-12" />
+        <p className="mt-8 text-center text-sm text-muted-foreground">
+          <Link href="/pricing" className="text-brand hover:underline">
+            See the full pricing page →
+          </Link>
+        </p>
+      </section>
+
+      {/* FAQ */}
+      <section className="px-4 py-20 sm:px-6">
+        <FaqSection items={productFaqs} />
+      </section>
+
       {/* CTA */}
       <section className="mx-auto max-w-6xl px-4 pb-24 sm:px-6">
-        <div className="relative overflow-hidden rounded-2xl border border-border/60 px-6 py-16 text-center">
+        <div className="relative overflow-hidden rounded-3xl border border-brand/30 bg-gradient-to-br from-brand/15 via-card/40 to-background px-6 py-16 text-center sm:py-20">
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(60%_120%_at_50%_0%,rgb(255_122_24/0.15),transparent)]"
+            className="pointer-events-none absolute -top-24 left-1/2 -z-10 h-64 w-[36rem] -translate-x-1/2 rounded-full bg-brand/25 blur-[120px]"
           />
-          <h2 className="text-2xl font-bold sm:text-3xl">
-            Ready to get the edge?
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0 -z-10 bg-grain opacity-[0.15] mix-blend-soft-light"
+          />
+          <div className="mx-auto mb-6 inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-brand/40 bg-brand/15 text-brand">
+            <Ghost className="h-7 w-7" />
+          </div>
+          <h2 className="text-3xl font-bold sm:text-4xl">
+            Your edge is one download away
           </h2>
-          <p className="mx-auto mt-3 max-w-md text-muted-foreground">
-            Create an account and be in-game in minutes.
+          <p className="mx-auto mt-4 max-w-md text-muted-foreground">
+            Create an account, pick a plan, and be in-game in minutes — on
+            whatever client you run.
           </p>
           <Button asChild size="lg" className="mt-8">
             <Link href="/signup">Get {siteConfig.name}</Link>
