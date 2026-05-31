@@ -3,7 +3,7 @@ import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { mainNav, siteConfig } from "@/lib/nav";
 import { createClient } from "@/lib/supabase/server";
-import { signOut } from "@/lib/auth-actions";
+import { AccountMenu } from "@/components/account-menu";
 
 export async function SiteHeader() {
   const supabase = await createClient();
@@ -42,16 +42,11 @@ export async function SiteHeader() {
         </div>
         <div className="flex items-center gap-2">
           {user ? (
-            <>
-              <Button asChild variant="ghost">
-                <Link href="/account">Account</Link>
-              </Button>
-              <form action={signOut}>
-                <Button type="submit" variant="outline">
-                  Log out
-                </Button>
-              </form>
-            </>
+            <AccountMenu
+              email={user.email ?? ""}
+              name={user.user_metadata?.full_name ?? user.user_metadata?.name}
+              avatarUrl={user.user_metadata?.avatar_url}
+            />
           ) : (
             <>
               <Button asChild variant="ghost">

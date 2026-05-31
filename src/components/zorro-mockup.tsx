@@ -42,13 +42,13 @@ function Check({ on, className }: { on: boolean; className?: string }) {
     return (
         <span
             className={cn(
-                "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px]",
-                on ? "bg-[#3fb950]" : "border border-white/15 bg-white/5",
+                "flex h-3.5 w-3.5 shrink-0 items-center justify-center rounded-[3px] border border-white/15",
+                on ? "bg-white/5" : "border bg-white/5",
                 className,
             )}
         >
             {on && (
-                <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 text-black">
+                <svg viewBox="0 0 12 12" className="h-2.5 w-2.5 text-[#3fb950]">
                     <path
                         d="M2.5 6.2l2.2 2.2L9.5 3.5"
                         stroke="currentColor"
