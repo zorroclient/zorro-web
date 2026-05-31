@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { validateNewPassword, friendlyAuthError } from "@/lib/validation";
 
 export function UpdatePasswordForm() {
   const router = useRouter();
@@ -14,16 +15,22 @@ export function UpdatePasswordForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
   const [done, setDone] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    const passwordErr = validateNewPassword(password);
+    setPasswordError(passwordErr);
+    if (passwordErr) return;
+
     setPending(true);
     const supabase = createClient();
     const { error } = await supabase.auth.updateUser({ password });
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error.message));
       setPending(false);
       return;
     }
@@ -44,7 +51,7 @@ export function UpdatePasswordForm() {
           Your password has been updated.
         </p>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="password">New password</Label>
             <div className="relative">
@@ -52,12 +59,15 @@ export function UpdatePasswordForm() {
                 id="password"
                 type={showPassword ? "text" : "password"}
                 autoComplete="new-password"
-                required
-                minLength={8}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (passwordError) setPasswordError(null);
+                }}
                 disabled={pending}
                 className="pr-10"
+                aria-invalid={passwordError ? true : undefined}
+                aria-describedby={passwordError ? "password-error" : undefined}
               />
               <button
                 type="button"
@@ -74,7 +84,19 @@ export function UpdatePasswordForm() {
                 )}
               </button>
             </div>
-            <p className="text-xs text-muted-foreground">At least 8 characters.</p>
+            {passwordError ? (
+              <p
+                id="password-error"
+                className="text-sm text-destructive"
+                role="alert"
+              >
+                {passwordError}
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground">
+                At least 8 characters.
+              </p>
+            )}
           </div>
 
           {error && (

@@ -6,23 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
+import { validateEmail, friendlyAuthError } from "@/lib/validation";
 
 export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [sent, setSent] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
+
+    const emailErr = validateEmail(email);
+    setEmailError(emailErr);
+    if (emailErr) return;
+
     setPending(true);
     const supabase = createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
       redirectTo: `${window.location.origin}/account/update-password`,
     });
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error.message));
       setPending(false);
       return;
     }
@@ -45,18 +52,31 @@ export function ForgotPasswordForm() {
           your inbox.
         </p>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-8 space-y-4">
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <Input
               id="email"
               type="email"
               autoComplete="email"
-              required
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={(e) => {
+                setEmail(e.target.value);
+                if (emailError) setEmailError(null);
+              }}
               disabled={pending}
+              aria-invalid={emailError ? true : undefined}
+              aria-describedby={emailError ? "email-error" : undefined}
             />
+            {emailError && (
+              <p
+                id="email-error"
+                className="text-sm text-destructive"
+                role="alert"
+              >
+                {emailError}
+              </p>
+            )}
           </div>
 
           {error && (

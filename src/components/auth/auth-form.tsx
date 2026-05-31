@@ -10,6 +10,12 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { GoogleIcon, DiscordIcon } from "@/components/brand-icons";
 import { createClient } from "@/lib/supabase/client";
+import {
+  validateEmail,
+  validateRequiredPassword,
+  validateNewPassword,
+  friendlyAuthError,
+} from "@/lib/validation";
 
 type Mode = "login" | "signup";
 
@@ -44,6 +50,8 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [pending, setPending] = useState<null | "email" | Provider>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [emailError, setEmailError] = useState<string | null>(null);
+  const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const callbackUrl = () =>
     `${window.location.origin}/auth/callback?next=${encodeURIComponent(REDIRECT_AFTER_AUTH)}`;
@@ -59,7 +67,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
     // On success the browser is redirected to the provider, so we only land
     // here on failure.
     if (error) {
-      setError(error.message);
+      setError(friendlyAuthError(error.message));
       setPending(null);
     }
   }
@@ -68,6 +76,16 @@ export function AuthForm({ mode }: { mode: Mode }) {
     e.preventDefault();
     setError(null);
     setNotice(null);
+
+    const emailErr = validateEmail(email);
+    const passwordErr =
+      mode === "signup"
+        ? validateNewPassword(password)
+        : validateRequiredPassword(password);
+    setEmailError(emailErr);
+    setPasswordError(passwordErr);
+    if (emailErr || passwordErr) return;
+
     setPending("email");
     const supabase = createClient();
 
@@ -77,7 +95,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         password,
       });
       if (error) {
-        setError(error.message);
+        setError(friendlyAuthError(error.message));
         setPending(null);
         return;
       }
@@ -90,7 +108,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         options: { emailRedirectTo: callbackUrl() },
       });
       if (error) {
-        setError(error.message);
+        setError(friendlyAuthError(error.message));
         setPending(null);
         return;
       }
@@ -145,18 +163,27 @@ export function AuthForm({ mode }: { mode: Mode }) {
         <span className="h-px flex-1 bg-border" />
       </div>
 
-      <form onSubmit={handleEmail} className="space-y-4">
+      <form onSubmit={handleEmail} className="space-y-4" noValidate>
         <div className="space-y-2">
           <Label htmlFor="email">Email</Label>
           <Input
             id="email"
             type="email"
             autoComplete="email"
-            required
             value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            onChange={(e) => {
+              setEmail(e.target.value);
+              if (emailError) setEmailError(null);
+            }}
             disabled={busy}
+            aria-invalid={emailError ? true : undefined}
+            aria-describedby={emailError ? "email-error" : undefined}
           />
+          {emailError && (
+            <p id="email-error" className="text-sm text-destructive" role="alert">
+              {emailError}
+            </p>
+          )}
         </div>
         <div className="space-y-2">
           <div className="flex items-center justify-between">
@@ -177,12 +204,15 @@ export function AuthForm({ mode }: { mode: Mode }) {
               autoComplete={
                 mode === "login" ? "current-password" : "new-password"
               }
-              required
-              minLength={mode === "signup" ? 8 : undefined}
               value={password}
-              onChange={(e) => setPassword(e.target.value)}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                if (passwordError) setPasswordError(null);
+              }}
               disabled={busy}
               className="pr-10"
+              aria-invalid={passwordError ? true : undefined}
+              aria-describedby={passwordError ? "password-error" : undefined}
             />
             <button
               type="button"
@@ -199,10 +229,20 @@ export function AuthForm({ mode }: { mode: Mode }) {
               )}
             </button>
           </div>
-          {mode === "signup" && (
-            <p className="text-xs text-muted-foreground">
-              At least 8 characters.
+          {passwordError ? (
+            <p
+              id="password-error"
+              className="text-sm text-destructive"
+              role="alert"
+            >
+              {passwordError}
             </p>
+          ) : (
+            mode === "signup" && (
+              <p className="text-xs text-muted-foreground">
+                At least 8 characters.
+              </p>
+            )
           )}
         </div>
 
