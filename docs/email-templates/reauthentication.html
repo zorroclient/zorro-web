@@ -1,0 +1,49 @@
+<!--
+  Supabase → Authentication → Email Templates → "Reauthentication"
+  Paste this whole file as the template body. This one delivers a 6-digit code
+  ({{ .Token }}) the user types back in — there is no link.
+  Brand: dark surface + #ff7a18. Inline styles + tables for email-client support.
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <body style="margin:0; padding:0; background-color:#0b0d10;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0b0d10;">
+      <tr>
+        <td align="center" style="padding:32px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background-color:#14181d; border:1px solid rgba(255,255,255,0.08); border-radius:16px;">
+            <tr>
+              <td style="padding:32px 32px 0 32px;">
+                <div style="font-family:'Space Grotesk',Arial,Helvetica,sans-serif; font-size:20px; font-weight:700; letter-spacing:0.04em; color:#ffffff;">
+                  <span style="color:#ff7a18;">&#9679;</span>&nbsp; ZORRO
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 32px 0 32px;">
+                <h1 style="margin:0; font-family:'Space Grotesk',Arial,Helvetica,sans-serif; font-size:24px; line-height:1.25; color:#ffffff;">Confirm it's you</h1>
+                <p style="margin:12px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.6; color:#9aa3ad;">
+                  Enter this code to confirm the action on your Zorro account. It expires shortly.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px 0 32px;">
+                <div style="font-family:'Space Grotesk',Arial,Helvetica,monospace; font-size:34px; font-weight:700; letter-spacing:0.32em; color:#ff7a18; background-color:#0b0d10; border:1px solid rgba(255,122,24,0.4); border-radius:12px; padding:18px 0; text-align:center;">
+                  {{ .Token }}
+                </div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 32px 32px 32px;">
+                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:0 0 16px 0;" />
+                <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.6; color:#5b636d;">
+                  You're receiving this because a sensitive action was requested on your Zorro account. If that wasn't you, ignore this and consider resetting your password.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>
