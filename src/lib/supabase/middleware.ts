@@ -38,9 +38,12 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Gate protected routes here later (e.g. redirect unauthenticated users away
-  // from /dashboard). Left open in Phase 0.
-  void user;
+  // Protect the account area — bounce unauthenticated users to /login.
+  if (!user && request.nextUrl.pathname.startsWith("/account")) {
+    const url = request.nextUrl.clone();
+    url.pathname = "/login";
+    return NextResponse.redirect(url);
+  }
 
   return supabaseResponse;
 }

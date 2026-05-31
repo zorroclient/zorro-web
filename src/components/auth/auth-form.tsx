@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import type { Provider } from "@supabase/supabase-js";
+import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,6 +40,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [pending, setPending] = useState<null | "email" | Provider>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -158,16 +160,40 @@ export function AuthForm({ mode }: { mode: Mode }) {
         </div>
         <div className="space-y-2">
           <Label htmlFor="password">Password</Label>
-          <Input
-            id="password"
-            type="password"
-            autoComplete={mode === "login" ? "current-password" : "new-password"}
-            required
-            minLength={mode === "signup" ? 8 : undefined}
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            disabled={busy}
-          />
+          <div className="relative">
+            <Input
+              id="password"
+              type={showPassword ? "text" : "password"}
+              autoComplete={
+                mode === "login" ? "current-password" : "new-password"
+              }
+              required
+              minLength={mode === "signup" ? 8 : undefined}
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              disabled={busy}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowPassword((s) => !s)}
+              disabled={busy}
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+            >
+              {showPassword ? (
+                <EyeOff className="h-4 w-4" />
+              ) : (
+                <Eye className="h-4 w-4" />
+              )}
+            </button>
+          </div>
+          {mode === "signup" && (
+            <p className="text-xs text-muted-foreground">
+              At least 8 characters.
+            </p>
+          )}
         </div>
 
         {error && (
