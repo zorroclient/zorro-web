@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { mainNav, siteConfig } from "@/lib/nav";
 import { createClient } from "@/lib/supabase/server";
 import { AccountMenu } from "@/components/account-menu";
+import { MobileNav } from "@/components/mobile-nav";
 
 export async function SiteHeader() {
   const supabase = await createClient();
@@ -41,22 +42,27 @@ export async function SiteHeader() {
           </nav>
         </div>
         <div className="flex items-center gap-2">
-          {user ? (
-            <AccountMenu
-              email={user.email ?? ""}
-              name={user.user_metadata?.full_name ?? user.user_metadata?.name}
-              avatarUrl={user.user_metadata?.avatar_url}
-            />
-          ) : (
-            <>
-              <Button asChild variant="ghost">
-                <Link href="/login">Log in</Link>
-              </Button>
-              <Button asChild>
-                <Link href="/signup">Get Zorro</Link>
-              </Button>
-            </>
-          )}
+          <div className="hidden items-center gap-2 md:flex">
+            {user ? (
+              <AccountMenu
+                email={user.email ?? ""}
+                name={
+                  user.user_metadata?.full_name ?? user.user_metadata?.name
+                }
+                avatarUrl={user.user_metadata?.avatar_url}
+              />
+            ) : (
+              <>
+                <Button asChild variant="ghost">
+                  <Link href="/login">Log in</Link>
+                </Button>
+                <Button asChild>
+                  <Link href="/signup">Get Zorro</Link>
+                </Button>
+              </>
+            )}
+          </div>
+          <MobileNav items={mainNav} isLoggedIn={!!user} />
         </div>
       </div>
     </header>
