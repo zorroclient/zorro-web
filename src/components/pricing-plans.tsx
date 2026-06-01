@@ -1,8 +1,8 @@
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { plans } from "@/lib/pricing";
 import { siteConfig } from "@/lib/nav";
 import { cn } from "@/lib/utils";
+import { createCheckoutSession } from "@/lib/billing-actions";
 
 export function PricingPlans({ className }: { className?: string }) {
   return (
@@ -38,14 +38,16 @@ export function PricingPlans({ className }: { className?: string }) {
           {plan.note && (
             <p className="mt-2 text-sm text-muted-foreground">{plan.note}</p>
           )}
-          <Button
-            asChild
-            size="lg"
-            variant={plan.featured ? "default" : "outline"}
-            className="mt-6"
-          >
-            <Link href={`/signup?plan=${plan.id}`}>Get {siteConfig.name}</Link>
-          </Button>
+          <form action={createCheckoutSession.bind(null, plan.id)} className="mt-6">
+            <Button
+              type="submit"
+              size="lg"
+              variant={plan.featured ? "default" : "outline"}
+              className="w-full"
+            >
+              Get {siteConfig.name}
+            </Button>
+          </form>
         </div>
       ))}
     </div>

@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSubscription } from "@/lib/subscription";
+import { createPortalSession } from "@/lib/billing-actions";
+import { plans } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 
 export const metadata: Metadata = {
@@ -17,6 +19,16 @@ export default async function AccountOverviewPage() {
   if (!user) redirect("/login");
 
   const subscription = await getSubscription(user.id);
+  const planName = subscription
+    ? (plans.find((p) => p.id === subscription.plan)?.name ?? subscription.plan)
+    : null;
+  const renewsOn = subscription?.renewsAt
+    ? new Date(subscription.renewsAt).toLocaleDateString(undefined, {
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+      })
+    : null;
 
   return (
     <div className="space-y-6">
@@ -30,19 +42,21 @@ export default async function AccountOverviewPage() {
         {subscription ? (
           <div className="mt-3">
             <p className="text-sm">
-              <span className="font-medium text-foreground">
-                {subscription.plan}
-              </span>
-              {subscription.renewsAt && (
-                <span className="text-muted-foreground">
-                  {" "}
-                  · renews {subscription.renewsAt}
-                </span>
+              <span className="font-medium text-foreground">{planName}</span>
+              {renewsOn && (
+                <span className="text-muted-foreground"> · renews {renewsOn}</span>
               )}
             </p>
-            <Button asChild className="mt-5">
-              <Link href="/account/download">Download Zorro</Link>
-            </Button>
+            <div className="mt-5 flex flex-wrap gap-3">
+              <Button asChild>
+                <Link href="/account/download">Download Zorro</Link>
+              </Button>
+              <form action={createPortalSession}>
+                <Button type="submit" variant="outline">
+                  Manage subscription
+                </Button>
+              </form>
+            </div>
           </div>
         ) : (
           <div className="mt-3">
