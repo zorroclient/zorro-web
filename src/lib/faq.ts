@@ -1,6 +1,6 @@
 import { siteConfig } from "@/lib/nav";
 
-export type Faq = { q: string; a: string };
+export type Faq = { q: string; a: string; href?: string; hrefLabel?: string };
 
 // About the client — shown on the home page.
 export const productFaqs: Faq[] = [
@@ -14,15 +14,25 @@ export const productFaqs: Faq[] = [
   },
   {
     q: "Will it get me banned?",
-    a: "Zorro is built to stay quiet — it loads without a trace and can soft-unload or fully self-destruct on command. No client can promise total safety, but keeping your footprint minimal is a core design goal.",
+    a: `There's no guarantee it won't. Modern anti-cheats are genuinely good these days, and no client — ${siteConfig.name} included — can promise you'll never get caught. What we focus on is keeping your footprint minimal: it loads without a trace and can soft-unload or fully self-destruct on command. Run it knowing there is a risk.`,
   },
   {
     q: "Is it safe to stream or screen-share?",
-    a: `Yes. You can close the ${siteConfig.name} window completely and it keeps running in the background — no visible window, nothing on screen to give it away. Your stream or screen-share looks clean while everything stays active in-game.`,
+    a: `The app itself, yes — you can close the ${siteConfig.name} window completely and it keeps running in the background, so nothing from the client shows up on a stream or screen-share. Visual mods are the exception: anything that draws in your game, like ESP or Tracers, renders on screen just like the rest of the game, so viewers will see it. Keep visuals off if you need your capture to look completely clean.`,
   },
   {
-    q: "Will it slow down my game?",
-    a: `No — ${siteConfig.name} is built to stay light. It runs without frame drops or stutter, so your game feels exactly the way it does without it.`,
+    q: "Will my antivirus flag it?",
+    a: `It can. Because ${siteConfig.name} loads into your game, Windows Defender and other antivirus tools sometimes flag it as a false positive — that's normal for anything that injects into another program. If it gets quarantined, allow it through your antivirus and you're good to go.`,
+  },
+  {
+    q: "What happens when my game updates?",
+    a: `Updates are handled for you. ${siteConfig.name}'s builds auto-update to keep pace with the games and clients it supports, so there's no reinstalling or patching by hand — when support for a new version lands, it rolls out automatically.`,
+  },
+  {
+    q: "How do I control it?",
+    a: `Everything runs from the ${siteConfig.name} app itself — it's a separate program, not an in-game overlay. You toggle modules and tune each one from the app window, and your changes apply live in-game. For setup, per-module options, and the full walkthrough, head to the docs.`,
+    href: "/docs",
+    hrefLabel: "Read the docs",
   },
 ];
 

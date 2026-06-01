@@ -1,3 +1,4 @@
+import Link from "next/link";
 import {
   Accordion,
   AccordionContent,
@@ -31,6 +32,17 @@ export function FaqSection({
             </AccordionTrigger>
             <AccordionContent className="leading-relaxed text-muted-foreground">
               {faq.a}
+              {faq.href && (
+                <>
+                  {" "}
+                  <Link
+                    href={faq.href}
+                    className="text-brand hover:underline"
+                  >
+                    {faq.hrefLabel ?? "Learn more"} →
+                  </Link>
+                </>
+              )}
             </AccordionContent>
           </AccordionItem>
         ))}
