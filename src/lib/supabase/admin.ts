@@ -13,6 +13,29 @@ type SubscriptionRow = {
   updated_at: string;
 };
 
+type AppReleaseRow = {
+  id: string;
+  channel: string;
+  version: string;
+  mandatory: boolean;
+  active: boolean;
+  published_at: string | null;
+  windows_url: string | null;
+  windows_path: string | null;
+  windows_sha256: string | null;
+  windows_size: number | null;
+};
+
+type DownloadEventRow = {
+  id: string;
+  user_id: string;
+  version: string | null;
+  channel: string | null;
+  ip: string | null;
+  user_agent: string | null;
+  created_at: string;
+};
+
 export type Database = {
   public: {
     Tables: {
@@ -20,6 +43,18 @@ export type Database = {
         Row: SubscriptionRow;
         Insert: Partial<SubscriptionRow> & { user_id: string };
         Update: Partial<SubscriptionRow>;
+        Relationships: [];
+      };
+      app_releases: {
+        Row: AppReleaseRow;
+        Insert: Partial<AppReleaseRow>;
+        Update: Partial<AppReleaseRow>;
+        Relationships: [];
+      };
+      download_events: {
+        Row: DownloadEventRow;
+        Insert: Partial<DownloadEventRow> & { user_id: string };
+        Update: Partial<DownloadEventRow>;
         Relationships: [];
       };
     };
