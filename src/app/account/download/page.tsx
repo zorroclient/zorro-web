@@ -63,7 +63,7 @@ export default async function DownloadPage() {
   const hasRelease = Boolean(release);
 
   return (
-    <div className="rounded-2xl border border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-8">
+    <div className="rounded-2xl border border-brand/30 bg-linear-to-br from-brand/10 to-transparent p-8">
       <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-brand/40 bg-brand/15 text-brand">
         <Download className="h-5 w-5" />
       </div>
