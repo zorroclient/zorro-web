@@ -7,6 +7,7 @@ import { createAdminClient } from "@/lib/supabase/admin";
 import { getSubscription } from "@/lib/subscription";
 import { startDownload } from "@/lib/download-actions";
 import { Button } from "@/components/ui/button";
+import { OsNote } from "@/components/os-note";
 
 export const metadata: Metadata = {
   title: "Download",
@@ -83,6 +84,7 @@ export default async function DownloadPage() {
             Version {release!.version}
             {size && ` · ${size}`} · link expires after a minute
           </p>
+          <OsNote />
         </>
       ) : (
         <>
