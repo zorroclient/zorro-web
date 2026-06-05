@@ -82,7 +82,7 @@ const moduleGroups = [
   {
     icon: Wrench,
     category: "Utility",
-    modules: ["AutoFish"],
+    modules: ["AutoFish", "Drop Blocker", "Panic"],
   },
 ];
 
