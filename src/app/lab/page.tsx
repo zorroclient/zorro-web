@@ -1,24 +1,100 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Swords, Crosshair, ArrowRight, Eye, Globe, Wrench } from "lucide-react";
+import {
+  Swords,
+  Crosshair,
+  Move,
+  Eye,
+  Boxes,
+  Wrench,
+  Globe,
+  SlidersHorizontal,
+  RefreshCw,
+  Gauge,
+  Ghost,
+  ArrowRight,
+} from "lucide-react";
 import { HeroMotion } from "@/components/lab/hero-motion";
+import { ClientMarquee } from "@/components/client-marquee";
+import { PricingPlans } from "@/components/pricing-plans";
+import { FaqSection } from "@/components/faq-section";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { productFaqs } from "@/lib/faq";
+import { siteConfig } from "@/lib/nav";
+import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
-  title: "Lab — hero redesign",
+  title: "Lab — full page concept",
 };
 
-// Award-tier hero redesign (new-ui). Ink wash + orange-blade accent + scroll
-// motion. Recreated from docs/handoff in idiomatic Next.js. View at /lab.
-export default function LabPage() {
+const features = [
+  {
+    icon: Globe,
+    title: "Runs anywhere",
+    description:
+      "Lunar, vanilla, Cosmic or any server you play. One subscription, every setup.",
+  },
+  {
+    icon: SlidersHorizontal,
+    title: "Dialed-in control",
+    description:
+      "20+ modules across combat, movement, and visuals — each tunable down to the detail.",
+  },
+  {
+    icon: RefreshCw,
+    title: "Always current",
+    description:
+      "Auto-updating builds keep you ahead the moment anything changes.",
+  },
+  {
+    icon: Gauge,
+    title: "Clean & lightweight",
+    description:
+      "Engineered to stay smooth and out of your way — no frame drops, no babysitting.",
+  },
+];
+
+const moduleGroups = [
+  {
+    icon: Crosshair,
+    category: "Combat",
+    blurb: "Reach, Aim Assist, Kill Aura, Velocity — dialed in.",
+  },
+  {
+    icon: Move,
+    category: "Movement",
+    blurb: "Flight, Timer, FastBridge, Keep Sprint.",
+  },
+  { icon: Eye, category: "Visual", blurb: "ESP, Tracers, Fullbright, NameTags." },
+  {
+    icon: Boxes,
+    category: "World",
+    blurb: "Chest ESP, Block Search, Spawner ESP.",
+  },
+  { icon: Wrench, category: "Utility", blurb: "AutoFish, Drop Blocker, Panic." },
+];
+
+// Full-page concept (new-ui). Ink hero + dark editorial sections on shadcn
+// primitives (Button/Card); bespoke CSS only for the ink hero visuals.
+export default async function LabPage() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  // logged-in users go straight to their download; everyone else signs up
+  const getHref = user ? "/account/download" : "/signup";
+
   return (
     <div className="lab">
       <HeroMotion />
       <div aria-hidden className="lab-grain bg-grain" />
+      <div aria-hidden className="lab-figure-glow-2" />
 
+      {/* Hero */}
       <section className="lab-hero" id="lab-hero">
         <div className="lab-figure-wrap" aria-hidden>
-          <div className="lab-figure-glow-2" />
           <div className="lab-figure">
             <Image
               src="/brand/figure-trimmed.png"
@@ -41,7 +117,7 @@ export default function LabPage() {
 
         <div className="lab-copy">
           <span className="lab-eyebrow lab-reveal">
-            <span className="" /> • Ghost client •
+            <span className="" /> • Ghost client for Minecraft •
           </span>
           <h1 className="lab-display">
             <span className="lab-line">
@@ -57,77 +133,134 @@ export default function LabPage() {
             you play. Lightweight, always current, and gone without a trace.
           </p>
           <div className="lab-actions lab-reveal">
-            <Link className="lab-btn lab-btn-primary" href="/signup">
-              <Swords strokeWidth={2} />
-              Get Zorro
-            </Link>
-            <Link className="lab-btn lab-btn-ghost" href="/pricing">
-              View pricing
-            </Link>
-          </div>
-          <div className="lab-works lab-reveal">
-            <span className="lbl">Works with</span>
-            <span className="row">
-              <span>Lunar</span>
-              <span>Vanilla</span>
-              <span>Cosmic</span>
-              <span>+ more</span>
-            </span>
+            <Button asChild size="lg" className="h-11 px-6 text-[15px]">
+              <Link href={getHref}>
+                <Swords />
+                Get Zorro
+              </Link>
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="h-11 px-6 text-[15px]"
+            >
+              <Link href="/pricing">View pricing</Link>
+            </Button>
           </div>
         </div>
       </section>
 
+      {/* Supported clients */}
+      <ClientMarquee />
+
       <div className="lab-cut-wrap">
         <div className="lab-slash-cut" aria-hidden />
-        <section className="lab-teaser" id="lab-teaser">
-          <div className="lab-teaser-inner">
-          <span className="lab-kicker lab-s-reveal">Inside the client</span>
-          <h2 className="lab-s-reveal">Every edge, in one blade.</h2>
-          <p className="lab-s-reveal">
-            Combat, movement, visuals, world — 20+ modules, each tuned down to
-            the detail and included on every plan.
-          </p>
-          <div className="lab-grid4">
-            <div className="lab-cell lab-s-reveal">
-              <div className="ic">
-                <Crosshair size={22} strokeWidth={1.6} />
-              </div>
-              <div className="t">Combat</div>
-              <div className="d">
-                Reach, Aim Assist, Kill Aura, Velocity — dialed in.
+        <div className="lab-dark">
+          {/* Features */}
+          <section className="lab-section">
+            <div className="lab-wrap">
+              <p className="lab-kicker2 lab-s-reveal">Why Zorro</p>
+              <h2 className="lab-h2 lab-s-reveal">Every edge, in one client</h2>
+              <p className="lab-sub lab-s-reveal">
+                Combat, movement, and visuals — fully configurable, tuned to
+                stay smooth.
+              </p>
+              <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                {features.map((f) => (
+                  <Card
+                    key={f.title}
+                    className="lab-s-reveal gap-3 bg-card/40 p-6"
+                  >
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+                      <f.icon className="h-5 w-5" />
+                    </span>
+                    <h3 className="font-heading font-semibold">{f.title}</h3>
+                    <p className="text-sm text-muted-foreground">
+                      {f.description}
+                    </p>
+                  </Card>
+                ))}
               </div>
             </div>
-            <div className="lab-cell lab-s-reveal">
-              <div className="ic">
-                <ArrowRight size={22} strokeWidth={1.6} />
+          </section>
+
+          {/* Modules */}
+          <section className="lab-section" id="lab-teaser">
+            <div className="lab-wrap">
+              <p className="lab-kicker2 lab-s-reveal">Inside the client</p>
+              <h2 className="lab-h2 lab-s-reveal">Every edge, in one blade.</h2>
+              <p className="lab-sub lab-s-reveal">
+                Five categories, 20+ modules — each tuned down to the detail and
+                included on every plan.
+              </p>
+              <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+                {moduleGroups.map((g) => (
+                  <Card
+                    key={g.category}
+                    className="lab-s-reveal gap-2 bg-card/40 p-5"
+                  >
+                    <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+                      <g.icon className="h-5 w-5" />
+                    </span>
+                    <h3 className="font-heading font-semibold">{g.category}</h3>
+                    <p className="text-sm text-muted-foreground">{g.blurb}</p>
+                  </Card>
+                ))}
               </div>
-              <div className="t">Movement</div>
-              <div className="d">Flight, Timer, FastBridge, Keep Sprint.</div>
+              <p className="mt-8 text-sm text-muted-foreground">
+                <Link href="/docs/modules" className="text-brand hover:underline">
+                  See the full modules reference →
+                </Link>
+              </p>
             </div>
-            <div className="lab-cell lab-s-reveal">
-              <div className="ic">
-                <Eye size={22} strokeWidth={1.6} />
+          </section>
+
+          {/* Pricing */}
+          <section className="lab-section">
+            <div className="lab-wrap">
+              <p className="lab-kicker2 lab-s-reveal">Pricing</p>
+              <h2 className="lab-h2 lab-s-reveal">Simple, honest pricing</h2>
+              <p className="lab-sub lab-s-reveal">
+                One subscription unlocks everything. Pick how long you want it —
+                longer plans cost less per month.
+              </p>
+              <div className="lab-s-reveal">
+                <PricingPlans className="mt-12" />
               </div>
-              <div className="t">Visual</div>
-              <div className="d">ESP, Tracers, Fullbright, NameTags.</div>
             </div>
-            <div className="lab-cell lab-s-reveal">
-              <div className="ic">
-                <Globe size={22} strokeWidth={1.6} />
+          </section>
+
+          {/* FAQ */}
+          <section className="lab-section">
+            <div className="lab-wrap">
+              <FaqSection items={productFaqs} />
+            </div>
+          </section>
+
+          {/* CTA */}
+          <section className="lab-section pt-0">
+            <div className="lab-wrap">
+              <div className="lab-cta lab-s-reveal">
+                <span className="inline-flex h-14 w-14 items-center justify-center rounded-2xl border border-brand/40 bg-brand/15 text-brand">
+                  <Ghost className="h-7 w-7" />
+                </span>
+                <h2 className="lab-h2 mt-6">Your edge is one download away</h2>
+                <p className="mx-auto mt-4 max-w-md text-muted-foreground">
+                  Create an account, pick a plan, and be in-game in minutes — on
+                  whatever client you run.
+                </p>
+                <Button asChild size="lg" className="mt-8 h-11 px-6 text-[15px]">
+                  <Link href={getHref}>
+                    <Swords />
+                    Get {siteConfig.name}
+                    <ArrowRight />
+                  </Link>
+                </Button>
               </div>
-              <div className="t">World</div>
-              <div className="d">Chest ESP, Block Search, Spawner ESP.</div>
             </div>
-            <div className="lab-cell lab-s-reveal">
-              <div className="ic">
-                <Wrench size={22} strokeWidth={1.6} />
-              </div>
-              <div className="t">Utility</div>
-              <div className="d">AutoFish, Drop Blocker, Panic.</div>
-            </div>
-          </div>
-          </div>
-        </section>
+          </section>
+        </div>
       </div>
     </div>
   );

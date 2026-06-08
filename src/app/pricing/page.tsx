@@ -1,11 +1,21 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { Check } from "lucide-react";
+import { Check, Zap, ShieldCheck, RefreshCw } from "lucide-react";
 import { PricingPlans } from "@/components/pricing-plans";
 import { FaqSection } from "@/components/faq-section";
 import { pricingFaqs } from "@/lib/faq";
 import { included } from "@/lib/pricing";
 import { siteConfig } from "@/lib/nav";
+
+const trust = [
+  { icon: Zap, label: "Instant access", detail: "Live the moment you check out." },
+  { icon: RefreshCw, label: "Cancel anytime", detail: "No lock-in, no hassle." },
+  {
+    icon: ShieldCheck,
+    label: "Secure checkout",
+    detail: "Payments handled by Stripe.",
+  },
+];
 
 export const metadata: Metadata = {
   title: "Pricing",
@@ -42,6 +52,26 @@ export default function PricingPage() {
 
         {/* plans */}
         <PricingPlans className="mt-14" />
+
+        {/* trust strip */}
+        <div className="mx-auto mt-12 grid max-w-3xl gap-4 sm:grid-cols-3">
+          {trust.map((t) => (
+            <div
+              key={t.label}
+              className="flex items-center gap-3 rounded-xl border border-border/60 bg-card/40 px-4 py-3"
+            >
+              <span className="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+                <t.icon className="h-4 w-4" />
+              </span>
+              <span>
+                <span className="block text-sm font-medium">{t.label}</span>
+                <span className="block text-xs text-muted-foreground">
+                  {t.detail}
+                </span>
+              </span>
+            </div>
+          ))}
+        </div>
 
         {/* what's included */}
         <div className="mx-auto mt-14 max-w-2xl rounded-2xl border border-border/60 bg-card/40 p-7">

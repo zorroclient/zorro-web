@@ -108,19 +108,17 @@ export function HeroMotion() {
         },
       });
 
-      // teaser scroll reveals
-      gsap.utils.toArray<HTMLElement>("#lab-teaser .lab-s-reveal").forEach(
-        (el, i) => {
-          gsap.to(el, {
-            opacity: 1,
-            y: 0,
-            duration: 1,
-            ease: "expo.out",
-            delay: (i % 4) * 0.05,
-            scrollTrigger: { trigger: el, start: "top 85%" },
-          });
-        },
-      );
+      // scroll reveals across every dark section
+      gsap.utils.toArray<HTMLElement>(".lab-s-reveal").forEach((el, i) => {
+        gsap.to(el, {
+          opacity: 1,
+          y: 0,
+          duration: 1,
+          ease: "expo.out",
+          delay: (i % 4) * 0.05,
+          scrollTrigger: { trigger: el, start: "top 85%" },
+        });
+      });
     });
 
     return () => {

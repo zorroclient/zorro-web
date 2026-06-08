@@ -31,7 +31,21 @@ export function DocsToc({
       const el = document.getElementById(item.id);
       if (el) observer.observe(el);
     });
-    return () => observer.disconnect();
+
+    // the last section often can't scroll high enough to hit the observer's
+    // band, so highlight it whenever the page is scrolled to the bottom
+    const onScroll = () => {
+      const atBottom =
+        window.innerHeight + window.scrollY >=
+        document.documentElement.scrollHeight - 2;
+      if (atBottom && items.length) setActive(items[items.length - 1].id);
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
   }, [items]);
 
   return (
