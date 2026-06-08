@@ -42,55 +42,523 @@
     animation: zorro-fade-up 0.7s ease-out both;
 }
 
-/* --- /lab hero experiment (new-ui): ink + orange-blade concept --- */
-@keyframes lab-fade-up {
-    from {
-        opacity: 0;
-        transform: translateY(22px);
+/* ============================================================
+   /lab hero redesign (new-ui) — "ink wash + scroll motion"
+   Finished design is the BASE CSS. Hidden/pre-animation states
+   apply only under html.lab-js-motion (entrance) and
+   html.lab-gsap-ok (scroll reveals), classes added by JS. So
+   no-JS / lib-failure / reduced-motion all render the full hero.
+   ============================================================ */
+.lab {
+    --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+    --ease-in-out: cubic-bezier(0.65, 0, 0.35, 1);
+    --edge: clamp(20px, 5vw, 72px);
+    position: relative;
+    background: #08090b;
+    color: #fff;
+    overflow-x: hidden;
+    /* slide the hero up so it fills the full viewport beneath the (translucent)
+       sticky site header, instead of starting below it and looking off-center */
+    margin-top: -5rem;
+}
+
+/* grain over the whole spike */
+.lab-grain {
+    position: fixed;
+    inset: 0;
+    z-index: 90;
+    pointer-events: none;
+    opacity: 0.16;
+    mix-blend-mode: soft-light;
+}
+
+/* ---------- hero ---------- */
+.lab-hero {
+    position: relative;
+    min-height: 100svh;
+    /* contained to a centered column (slightly wider than the 72rem navbar) */
+    max-width: 72rem;
+    margin-inline: auto;
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    align-items: center;
+    padding: 0 var(--edge);
+    overflow: hidden;
+}
+.lab-figure-wrap {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+}
+/* spotlight CORE — a focused warm pool of light sitting on the figure,
+   brightest at center and falling off, so the logo reads as lit, not floating */
+/* soft diagonal light — a wash brightest in the top-left corner, fading out
+   toward the centre. Pure gradient (no edges, no clip), so it reads as ambient
+   directional light falling in from the upper-left. */
+.lab-figure-glow-2 {
+    position: absolute;
+    inset: -10% -10% -10% -10%;
+    background:
+        radial-gradient(
+            46% 50% at 18% 16%,
+            rgb(255 138 40 / 0.22),
+            transparent 70%
+        ),
+        linear-gradient(
+            122deg,
+            rgb(255 122 24 / 0.08) 0%,
+            transparent 42%
+        );
+    filter: blur(12px);
+    mix-blend-mode: screen;
+    will-change: transform, opacity;
+}
+.lab-figure,
+.lab-figure-rim {
+    position: absolute;
+    top: 50%;
+    right: 5vw;
+    transform: translateY(-50%);
+    width: min(42vw, 580px);
+    aspect-ratio: 914 / 623;
+    will-change: transform;
+}
+.lab-figure img,
+.lab-figure-rim img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+.lab-figure img {
+    filter: brightness(0.46) saturate(0) contrast(1.15);
+    opacity: 0.9;
+    -webkit-mask-image:
+        radial-gradient(100% 100% at 60% 46%, #000 46%, transparent 82%),
+        linear-gradient(90deg, transparent 0%, #000 26%);
+    -webkit-mask-composite: source-in;
+    mask-image:
+        radial-gradient(100% 100% at 60% 46%, #000 46%, transparent 82%),
+        linear-gradient(90deg, transparent 0%, #000 26%);
+    mask-composite: intersect;
+}
+.lab-figure-rim {
+    mix-blend-mode: screen;
+    opacity: 0.55;
+}
+.lab-figure-rim img {
+    filter: brightness(0) saturate(1) invert(58%) sepia(86%) saturate(2200%)
+        hue-rotate(347deg);
+    -webkit-mask-image: linear-gradient(255deg, #000 0%, transparent 26%);
+    mask-image: linear-gradient(255deg, #000 0%, transparent 26%);
+}
+
+.lab-copy {
+    position: relative;
+    z-index: 2;
+    max-width: 640px;
+    padding: 120px 0 60px;
+}
+.lab-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-size: 12px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.62);
+}
+.lab-pulse {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--color-brand);
+    box-shadow: 0 0 0 0 rgb(255 122 24 / 0.55);
+    animation: lab-pulse 2.6s infinite;
+}
+@keyframes lab-pulse {
+    0% {
+        box-shadow: 0 0 0 0 rgb(255 122 24 / 0.5);
     }
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    70% {
+        box-shadow: 0 0 0 9px rgb(255 122 24 / 0);
+    }
+    100% {
+        box-shadow: 0 0 0 0 rgb(255 122 24 / 0);
     }
 }
-@keyframes lab-reveal {
-    from {
-        opacity: 0;
-        transform: scale(0.94) rotate(-1.5deg);
-    }
-    to {
-        opacity: 1;
-        transform: none;
-    }
+.lab-display {
+    margin: 22px 0 0;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(2.6rem, 6vw, 5.2rem);
+    line-height: 0.95;
+    letter-spacing: -0.035em;
+    text-wrap: balance;
 }
-@keyframes lab-draw {
-    to {
-        stroke-dashoffset: 0;
-    }
+.lab-line {
+    display: block;
+    overflow: hidden;
+    /* give descenders (g, y, p) room so the clip box doesn't cut them */
+    padding-bottom: 0.14em;
+    margin-bottom: -0.14em;
 }
-.lab-fade {
-    opacity: 0;
-    animation: lab-fade-up 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+.lab-line > span {
+    display: block;
 }
-.lab-reveal {
-    opacity: 0;
-    animation: lab-reveal 1.1s cubic-bezier(0.22, 1, 0.36, 1) 0.15s forwards;
+.lab-blade {
+    color: var(--color-brand);
 }
 .lab-slash {
-    stroke-dasharray: 1;
-    stroke-dashoffset: 1;
-    animation: lab-draw 0.9s ease-out 0.75s forwards;
+    margin: 30px 0 0;
+    height: 3px;
+    width: 220px;
+    background: var(--color-brand);
+    transform-origin: left center;
+    box-shadow: 0 0 24px -4px var(--color-brand);
 }
+.lab-lead {
+    margin: 28px 0 0;
+    max-width: 430px;
+    font-size: 17px;
+    line-height: 1.6;
+    color: rgb(255 255 255 / 0.72);
+}
+.lab-actions {
+    margin: 38px 0 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    align-items: center;
+}
+.lab-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    height: 50px;
+    padding: 0 26px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    text-decoration: none;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition:
+        transform 0.12s var(--ease-out),
+        background 0.2s,
+        border-color 0.2s,
+        color 0.2s;
+}
+.lab-btn-primary {
+    background: var(--color-brand);
+    color: #1c1206;
+}
+.lab-btn-primary:hover {
+    background: var(--color-brand-hover);
+    transform: translateY(-2px);
+}
+.lab-btn-ghost {
+    color: #fff;
+    border-color: rgb(255 255 255 / 0.18);
+    background: rgb(255 255 255 / 0.02);
+}
+.lab-btn-ghost:hover {
+    border-color: rgb(255 255 255 / 0.4);
+    transform: translateY(-2px);
+}
+.lab-btn svg {
+    width: 17px;
+    height: 17px;
+}
+.lab-works {
+    margin: 56px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 22px;
+    flex-wrap: wrap;
+}
+.lab-works .lbl {
+    font-size: 11px;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: rgb(255 255 255 / 0.42);
+}
+.lab-works .row {
+    display: flex;
+    gap: 22px;
+}
+.lab-works .row span {
+    font-family: var(--font-heading);
+    font-size: 14px;
+    font-weight: 500;
+    color: rgb(255 255 255 / 0.72);
+}
+.lab-cue {
+    position: absolute;
+    left: var(--edge);
+    bottom: 30px;
+    z-index: 3;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: rgb(255 255 255 / 0.5);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+.lab-cue .bar {
+    position: relative;
+    width: 1px;
+    height: 46px;
+    background: rgb(255 255 255 / 0.18);
+    overflow: hidden;
+}
+.lab-cue .bar::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: -50%;
+    width: 100%;
+    height: 50%;
+    background: var(--color-brand);
+    animation: lab-drip 2.2s var(--ease-in-out) infinite;
+}
+@keyframes lab-drip {
+    0% {
+        top: -50%;
+    }
+    60%,
+    100% {
+        top: 100%;
+    }
+}
+
+/* ---------- subtle accent slash cut + teaser ---------- */
+.lab-cut-wrap {
+    position: relative;
+}
+/* a thin diagonal orange slash drawn across the section boundary */
+.lab-slash-cut {
+    position: absolute;
+    top: -1px;
+    left: var(--edge);
+    right: var(--edge);
+    height: 2px;
+    z-index: 5;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        var(--color-brand) 12%,
+        var(--color-brand) 88%,
+        transparent
+    );
+    box-shadow: 0 0 26px -2px var(--color-brand);
+    transform: rotate(-1.4deg) scaleX(0);
+    transform-origin: left center;
+    will-change: transform;
+}
+.lab-teaser {
+    position: relative;
+    z-index: 1;
+    min-height: 100svh;
+    background: #0b0c0e;
+    border-top: 1px solid rgb(255 255 255 / 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 120px var(--edge);
+}
+/* full-width band, content contained to the same centered column as the hero */
+.lab-teaser-inner {
+    width: 100%;
+    max-width: 72rem;
+    margin-inline: auto;
+}
+.lab-kicker {
+    font-size: 12px;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--color-brand);
+}
+.lab-teaser h2 {
+    margin: 18px 0 0;
+    font-family: var(--font-heading);
+    font-weight: 700;
+    font-size: clamp(2.2rem, 5vw, 4rem);
+    letter-spacing: -0.03em;
+    line-height: 1;
+    max-width: 14ch;
+}
+.lab-teaser p {
+    margin: 24px 0 0;
+    max-width: 460px;
+    font-size: 17px;
+    line-height: 1.6;
+    color: rgb(255 255 255 / 0.66);
+}
+.lab-grid4 {
+    margin: 64px 0 0;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 1px;
+    background: rgb(255 255 255 / 0.07);
+    border: 1px solid rgb(255 255 255 / 0.07);
+}
+.lab-cell {
+    background: #0b0c0e;
+    padding: 30px 26px;
+    min-height: 200px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: background 0.3s;
+}
+.lab-cell:hover {
+    background: #101113;
+}
+.lab-cell .t {
+    font-family: var(--font-heading);
+    font-size: 19px;
+    font-weight: 600;
+}
+.lab-cell .d {
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: rgb(255 255 255 / 0.55);
+}
+.lab-cell .ic {
+    color: var(--color-brand);
+}
+@media (max-width: 900px) {
+    .lab-hero {
+        grid-template-columns: 1fr;
+    }
+    .lab-figure,
+    .lab-figure-rim {
+        right: -22vw;
+        width: 130vw;
+        opacity: 0.5;
+    }
+    .lab-grid4 {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* ---------- motion gating ---------- */
+html.lab-js-motion .lab-reveal {
+    opacity: 0;
+    transform: translateY(26px);
+    transition:
+        opacity 0.9s var(--ease-out),
+        transform 0.9s var(--ease-out);
+}
+html.lab-js-motion .lab-line > span {
+    transform: translateY(110%);
+    transition: transform 1s var(--ease-out);
+}
+html.lab-js-motion .lab-slash {
+    transform: scaleX(0);
+    transition: transform 0.9s var(--ease-in-out) 0.55s;
+}
+html.lab-js-motion .lab-figure {
+    opacity: 0;
+    transition: opacity 1.5s var(--ease-out);
+}
+html.lab-js-motion .lab-figure-rim {
+    opacity: 0;
+    transition: opacity 1.6s var(--ease-out);
+}
+html.lab-js-motion .lab-figure-glow-2 {
+    opacity: 0;
+    transition: opacity 1.7s var(--ease-out);
+}
+html.lab-js-motion .lab-eyebrow.lab-reveal {
+    transition-delay: 0.1s;
+}
+html.lab-js-motion .lab-lead.lab-reveal {
+    transition-delay: 0.5s;
+}
+html.lab-js-motion .lab-actions.lab-reveal {
+    transition-delay: 0.62s;
+}
+html.lab-js-motion .lab-works.lab-reveal {
+    transition-delay: 0.74s;
+}
+html.lab-js-motion .lab-line:nth-child(1) > span {
+    transition-delay: 0.18s;
+}
+html.lab-js-motion .lab-line:nth-child(2) > span {
+    transition-delay: 0.3s;
+}
+/* revealed end-states */
+html.lab-js-motion.lab-in .lab-reveal {
+    opacity: 1;
+    transform: none;
+}
+html.lab-js-motion.lab-in .lab-line > span {
+    transform: none;
+}
+html.lab-js-motion.lab-in .lab-slash {
+    transform: scaleX(1);
+}
+html.lab-js-motion.lab-in .lab-figure {
+    opacity: 0.9;
+}
+html.lab-js-motion.lab-in .lab-figure-rim {
+    opacity: 0.55;
+}
+html.lab-js-motion.lab-in .lab-figure-glow-2 {
+    opacity: 1;
+}
+/* scroll-reveals (teaser) — hidden only when GSAP is confirmed present */
+html.lab-gsap-ok .lab-s-reveal {
+    opacity: 0;
+    transform: translateY(30px);
+}
+
 @media (prefers-reduced-motion: reduce) {
-    .lab-fade,
-    .lab-reveal {
-        animation: none;
-        opacity: 1;
+    html.lab-js-motion .lab-reveal,
+    html.lab-js-motion .lab-line > span,
+    html.lab-js-motion .lab-slash,
+    html.lab-js-motion .lab-figure,
+    html.lab-js-motion .lab-figure-rim,
+    html.lab-js-motion .lab-figure-glow,
+    html.lab-gsap-ok .lab-s-reveal {
+        opacity: 1 !important;
+        transform: none !important;
+        transition: none !important;
     }
-    .lab-slash {
-        animation: none;
-        stroke-dashoffset: 0;
+    html.lab-js-motion.lab-in .lab-figure {
+        opacity: 0.9 !important;
     }
+    html.lab-js-motion.lab-in .lab-figure-rim {
+        opacity: 0.55 !important;
+    }
+}
+
+/* custom scrollbar (new-ui) — subtle brand-tinted thumb */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 122 24 / 0.35) transparent;
+}
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgb(255 122 24 / 0.3);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(255 122 24 / 0.5);
+    background-clip: content-box;
 }
 
 /* Fractal-noise grain overlay (replaces the grid backdrop) */
