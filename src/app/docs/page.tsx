@@ -12,6 +12,7 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { siteConfig } from "@/lib/nav";
+import { moduleCategories } from "@/lib/modules";
 import { DocsToc } from "@/components/docs/docs-toc";
 
 export const metadata: Metadata = {
@@ -32,31 +33,6 @@ const sections = [
   { id: "streaming", label: "Streaming" },
 ] as const;
 
-const moduleGroups = [
-  {
-    category: "Combat",
-    modules: [
-      "Reach",
-      "Velocity",
-      "Aim Assist",
-      "Kill Aura",
-      "Autoclicker",
-      "AutoPot",
-      "RightClicker",
-      "WTap",
-    ],
-  },
-  {
-    category: "Movement",
-    modules: ["Timer", "Flight", "FastBridge", "Keep Sprint"],
-  },
-  { category: "Visual", modules: ["Fullbright", "ESP", "Tracers", "NameTags"] },
-  {
-    category: "World",
-    modules: ["Block Search", "Chest ESP", "Spawner ESP", "Container ESP"],
-  },
-  { category: "Utility", modules: ["AutoFish", "Drop Blocker", "Panic"] },
-];
 
 export default function DocsPage() {
   return (
@@ -198,21 +174,21 @@ export default function DocsPage() {
               .
             </p>
             <div className="not-prose mt-6 grid gap-4 sm:grid-cols-2">
-              {moduleGroups.map((group) => (
+              {moduleCategories.map((group) => (
                 <div
-                  key={group.category}
+                  key={group.id}
                   className="rounded-xl border border-border/60 bg-card/40 p-5"
                 >
                   <h3 className="font-heading text-sm font-semibold">
-                    {group.category}
+                    {group.label}
                   </h3>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {group.modules.map((m) => (
                       <span
-                        key={m}
+                        key={m.name}
                         className="rounded-md border border-border/60 bg-muted/40 px-2.5 py-1 text-xs text-foreground/80"
                       >
-                        {m}
+                        {m.name}
                       </span>
                     ))}
                   </div>

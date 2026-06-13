@@ -1,95 +1,15 @@
 import Link from "next/link";
-import {
-  Globe,
-  SlidersHorizontal,
-  RefreshCw,
-  Gauge,
-  Ghost,
-  Crosshair,
-  Move,
-  Eye,
-  Boxes,
-  Wrench,
-} from "lucide-react";
+import { Ghost } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { ZorroMockup } from "@/components/zorro-mockup";
 import { PricingPlans } from "@/components/pricing-plans";
 import { FaqSection } from "@/components/faq-section";
 import { productFaqs } from "@/lib/faq";
 import { siteConfig } from "@/lib/nav";
+import { features } from "@/lib/features";
+import { moduleCategories, totalModuleCount } from "@/lib/modules";
 
 const compatibility = ["Lunar", "Vanilla", "Cosmic", "+ more"];
-
-const features = [
-  {
-    icon: Globe,
-    title: "Runs anywhere",
-    description:
-      "Lunar, vanilla, Cosmic or any server you play on. One subscription, every setup.",
-  },
-  {
-    icon: SlidersHorizontal,
-    title: "Dialed-in control",
-    description:
-      "20+ modules across combat, movement, and visuals — each tunable down to the detail.",
-  },
-  {
-    icon: RefreshCw,
-    title: "Always current",
-    description:
-      "Auto-updating builds keep you ahead the moment anything changes.",
-  },
-  {
-    icon: Gauge,
-    title: "Clean & lightweight",
-    description:
-      "Engineered to stay smooth and out of your way — no frame drops, no babysitting.",
-  },
-];
-
-// Canonical lineup — mirrors the mod registry in ghoster
-// (src/dll/runtime/factories/mod_factory.cpp). Keep in sync with the build.
-const moduleGroups = [
-  {
-    icon: Crosshair,
-    category: "Combat",
-    modules: [
-      "Reach",
-      "Velocity",
-      "Aim Assist",
-      "Kill Aura",
-      "Autoclicker",
-      "AutoPot",
-      "RightClicker",
-      "WTap",
-    ],
-  },
-  {
-    icon: Move,
-    category: "Movement",
-    modules: ["Timer", "Flight", "FastBridge", "Keep Sprint"],
-  },
-  {
-    icon: Eye,
-    category: "Visual",
-    modules: ["Fullbright", "ESP", "Tracers", "NameTags"],
-  },
-  {
-    icon: Boxes,
-    category: "World",
-    modules: ["Block Search", "Chest ESP", "Spawner ESP", "Container ESP"],
-  },
-  {
-    icon: Wrench,
-    category: "Utility",
-    modules: ["AutoFish", "Drop Blocker", "Panic"],
-  },
-];
-
-const totalModules = moduleGroups.reduce(
-  (sum, g) => sum + g.modules.length,
-  0,
-);
 
 export default function Home() {
   return (
@@ -218,14 +138,14 @@ export default function Home() {
               Inside the client
             </h2>
             <p className="mt-4 text-muted-foreground">
-              {totalModules} modules across five categories — each fully
+              {totalModuleCount} modules across five categories — each fully
               configurable and tuned to stay smooth.
             </p>
           </div>
           <div className="mt-12 flex flex-wrap justify-center gap-5">
-            {moduleGroups.map((group) => (
+            {moduleCategories.map((group) => (
               <div
-                key={group.category}
+                key={group.id}
                 className="w-full rounded-xl border border-border/60 bg-card/40 p-6 transition-colors hover:border-brand/50 sm:w-[calc(50%-0.625rem)] lg:w-[calc(33.333%-0.84rem)]"
               >
                 <div className="flex items-center gap-3">
@@ -234,7 +154,7 @@ export default function Home() {
                   </span>
                   <div>
                     <h3 className="font-heading font-semibold leading-tight">
-                      {group.category}
+                      {group.label}
                     </h3>
                     <p className="text-xs text-muted-foreground">
                       {group.modules.length}{" "}
@@ -245,10 +165,10 @@ export default function Home() {
                 <div className="mt-5 flex flex-wrap gap-2">
                   {group.modules.map((m) => (
                     <span
-                      key={m}
+                      key={m.name}
                       className="rounded-md border border-border/60 bg-muted/40 px-2.5 py-1 text-xs text-foreground/80"
                     >
-                      {m}
+                      {m.name}
                     </span>
                   ))}
                 </div>

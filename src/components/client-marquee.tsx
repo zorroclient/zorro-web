@@ -6,16 +6,17 @@ import Image from "next/image";
 type Client = { name: string; logo?: string };
 
 const clients: Client[] = [
-  { name: "Lunar", logo: "/brand/clients/lunar.svg" },
-  { name: "Vanilla", logo: "/brand/clients/vanilla.svg" },
-  { name: "Cosmic", logo: "/brand/clients/cosmic.svg" },
-  { name: "Badlion", logo: "/brand/clients/badlion.svg" },
-  { name: "Feather", logo: "/brand/clients/feather.svg" },
+  { name: "Lunar", logo: "/brand/lunar-logo-norm.png" },
+  { name: "Vanilla", logo: "/brand/minecraft.svg" },
+  { name: "Cosmic", logo: "/brand/cosmic-logo-norm.png" },
+  { name: "Badlion", logo: "/brand/badlion-logo-norm.png" },
+  { name: "Forge", logo: "/brand/forge-logo.svg" },
+  { name: "Orbit", logo: "/brand/orbit-logo-norm.png" },
 ];
 
 export function ClientMarquee() {
-  // duplicate so the -50% translate loops seamlessly
-  const items = [...clients, ...clients];
+  // 4x so one set always fills any viewport; animation moves -25% (= one set)
+  const items = [...clients, ...clients, ...clients, ...clients];
   return (
     <div className="lab-clients">
       <p className="lab-clients-label">Supported clients</p>
@@ -31,9 +32,9 @@ export function ClientMarquee() {
                 <Image
                   src={c.logo}
                   alt={c.name}
-                  width={132}
-                  height={32}
-                  className="h-7 w-auto opacity-70"
+                  width={160}
+                  height={48}
+                  className="h-8 w-auto opacity-70"
                 />
               ) : (
                 c.name

@@ -1,20 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Metadata } from "next";
-import {
-  Swords,
-  Crosshair,
-  Move,
-  Eye,
-  Boxes,
-  Wrench,
-  Globe,
-  SlidersHorizontal,
-  RefreshCw,
-  Gauge,
-  Ghost,
-  ArrowRight,
-} from "lucide-react";
+import { Swords, Ghost, ArrowRight } from "lucide-react";
 import { HeroMotion } from "@/components/lab/hero-motion";
 import { ClientMarquee } from "@/components/client-marquee";
 import { PricingPlans } from "@/components/pricing-plans";
@@ -23,58 +10,15 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { productFaqs } from "@/lib/faq";
 import { siteConfig } from "@/lib/nav";
+import { features } from "@/lib/features";
+import { moduleCategories } from "@/lib/modules";
 import { createClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Lab — full page concept",
 };
 
-const features = [
-  {
-    icon: Globe,
-    title: "Runs anywhere",
-    description:
-      "Lunar, vanilla, Cosmic or any server you play. One subscription, every setup.",
-  },
-  {
-    icon: SlidersHorizontal,
-    title: "Dialed-in control",
-    description:
-      "20+ modules across combat, movement, and visuals — each tunable down to the detail.",
-  },
-  {
-    icon: RefreshCw,
-    title: "Always current",
-    description:
-      "Auto-updating builds keep you ahead the moment anything changes.",
-  },
-  {
-    icon: Gauge,
-    title: "Clean & lightweight",
-    description:
-      "Engineered to stay smooth and out of your way — no frame drops, no babysitting.",
-  },
-];
-
-const moduleGroups = [
-  {
-    icon: Crosshair,
-    category: "Combat",
-    blurb: "Reach, Aim Assist, Kill Aura, Velocity — dialed in.",
-  },
-  {
-    icon: Move,
-    category: "Movement",
-    blurb: "Flight, Timer, FastBridge, Keep Sprint.",
-  },
-  { icon: Eye, category: "Visual", blurb: "ESP, Tracers, Fullbright, NameTags." },
-  {
-    icon: Boxes,
-    category: "World",
-    blurb: "Chest ESP, Block Search, Spawner ESP.",
-  },
-  { icon: Wrench, category: "Utility", blurb: "AutoFish, Drop Blocker, Panic." },
-];
+const compatibility = ["Lunar", "Vanilla", "Cosmic", "+ more"];
 
 // Full-page concept (new-ui). Ink hero + dark editorial sections on shadcn
 // primitives (Button/Card); bespoke CSS only for the ink hero visuals.
@@ -95,6 +39,7 @@ export default async function LabPage() {
       {/* Hero */}
       <section className="lab-hero" id="lab-hero">
         <div className="lab-figure-wrap" aria-hidden>
+          <div className="lab-figure-beam" />
           <div className="lab-figure">
             <Image
               src="/brand/figure-trimmed.png"
@@ -148,6 +93,21 @@ export default async function LabPage() {
               <Link href="/pricing">View pricing</Link>
             </Button>
           </div>
+          <div className="mt-10">
+              <p className="text-xs uppercase tracking-widest text-muted-foreground">
+                Works with
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-2">
+                {compatibility.map((c) => (
+                  <span
+                    key={c}
+                    className="font-heading text-sm font-medium text-foreground/80"
+                  >
+                    {c}
+                  </span>
+                ))}
+              </div>
+            </div>
         </div>
       </section>
 
@@ -195,16 +155,16 @@ export default async function LabPage() {
                 included on every plan.
               </p>
               <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
-                {moduleGroups.map((g) => (
+                {moduleCategories.map((g) => (
                   <Card
-                    key={g.category}
+                    key={g.id}
                     className="lab-s-reveal gap-2 bg-card/40 p-5"
                   >
                     <span className="inline-flex h-10 w-10 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
                       <g.icon className="h-5 w-5" />
                     </span>
-                    <h3 className="font-heading font-semibold">{g.category}</h3>
-                    <p className="text-sm text-muted-foreground">{g.blurb}</p>
+                    <h3 className="font-heading font-semibold">{g.label}</h3>
+                    <p className="text-sm text-muted-foreground">{g.teaser}</p>
                   </Card>
                 ))}
               </div>
