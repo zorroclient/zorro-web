@@ -29,8 +29,8 @@ export default async function DownloadPage() {
 
   if (!subscription) {
     return (
-      <div className="rounded-2xl border border-border/60 bg-card/40 p-8 text-center">
-        <div className="mx-auto inline-flex h-12 w-12 items-center justify-center rounded-xl border border-border/60 bg-muted/40 text-muted-foreground">
+      <div className="border border-white/10 bg-white/[0.025] p-8 text-center">
+        <div className="mx-auto inline-flex h-12 w-12 items-center justify-center border border-white/10 bg-white/5 text-muted-foreground">
           <Lock className="h-5 w-5" />
         </div>
         <h2 className="mt-4 font-heading text-lg font-semibold">
@@ -63,8 +63,8 @@ export default async function DownloadPage() {
   const hasRelease = Boolean(release);
 
   return (
-    <div className="rounded-2xl border border-brand/30 bg-linear-to-br from-brand/10 to-transparent p-8">
-      <div className="inline-flex h-12 w-12 items-center justify-center rounded-xl border border-brand/40 bg-brand/15 text-brand">
+    <div className="border border-brand/30 bg-gradient-to-br from-brand/10 to-transparent p-8">
+      <div className="inline-flex h-12 w-12 items-center justify-center border border-brand/40 bg-brand/15 text-brand">
         <Download className="h-5 w-5" />
       </div>
       <h2 className="mt-4 font-heading text-lg font-semibold">Download Zorro</h2>

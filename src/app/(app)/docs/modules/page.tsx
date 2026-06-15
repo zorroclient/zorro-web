@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function ModulesDocsPage() {
   return (
-    <div className="mx-auto max-w-6xl px-4 pb-16 pt-32 sm:px-6 lg:pb-24 lg:pt-40">
+    <div className="relative z-[1] mx-auto max-w-6xl px-4 pb-16 pt-32 sm:px-6 lg:pb-24 lg:pt-40">
       <div className="max-w-2xl">
         <Link
           href="/docs"

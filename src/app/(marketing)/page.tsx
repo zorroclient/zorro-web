@@ -1,28 +1,22 @@
 import Image from "next/image";
 import Link from "next/link";
-import type { Metadata } from "next";
 import { Swords, ArrowRight, Check, Ghost } from "lucide-react";
-import { FaqSection } from "@/components/faq-section";
+import { Marquee } from "@/components/site/marquee";
+import { BrandSlide } from "@/components/site/brand-slide";
+import { OsWindow } from "@/components/site/os-window";
+import { Panel } from "@/components/site/panel";
+import { SectionHeader } from "@/components/site/section-header";
+import { Faq } from "@/components/site/faq";
+import { ZorroMockup } from "@/components/zorro-mockup";
+import { Button } from "@/components/ui/button";
 import { features } from "@/lib/features";
 import { moduleCategories } from "@/lib/modules";
 import { plans, included } from "@/lib/pricing";
 import { productFaqs } from "@/lib/faq";
 import { siteConfig } from "@/lib/nav";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { HudMotion } from "./hud-motion";
-import { HudBg } from "./hud-bg";
-import { OsWindow } from "./os-window";
-import styles from "./hud.module.css";
+import styles from "@/components/site/hud.module.css";
 
-export const metadata: Metadata = {
-  title: "Lab — HUD direction",
-};
-
-// Throwaway design direction #1 (iteration 2): "Stealth / HUD". Reads like the
-// desktop client's overlay — no fake terminal commands (you click to inject).
-// Self-contained scoped CSS module; links go to /signup, nothing touches billing.
-// Intrinsic dimensions per logo so next/image keeps each aspect ratio; the
-// marquee then scales them all to a uniform height in CSS.
 const clients = [
   { name: "Lunar", logo: "/brand/lunar-logo-norm.png", w: 160, h: 48 },
   { name: "Vanilla", logo: "/brand/minecraft.svg", w: 300, h: 51 },
@@ -32,19 +26,8 @@ const clients = [
   { name: "Orbit", logo: "/brand/orbit-logo-norm.png", w: 160, h: 48 },
 ];
 
-function Reticle() {
-  return (
-    <svg className={styles.reticle} viewBox="0 0 100 100" fill="none" aria-hidden data-hud-parallax="-16">
-      <path d="M50 6 V22 M50 78 V94 M6 50 H22 M78 50 H94" stroke="currentColor" strokeWidth="1" />
-      <path d="M8 8 H20 M8 8 V20 M92 8 H80 M92 8 V20 M8 92 H20 M8 92 V80 M92 92 H80 M92 92 V80" stroke="currentColor" strokeWidth="1.2" />
-      <circle cx="50" cy="50" r="2" fill="currentColor" />
-    </svg>
-  );
-}
-
-// Latest published version for the status chip. app_releases isn't
-// client-readable, so read it with the service-role client (server-only).
-// Version strings are public; any failure falls back to "latest".
+// app_releases isn't client-readable; read the live version with the service
+// role client. Version strings are public; any failure falls back to "latest".
 async function getLatestVersion(): Promise<string | null> {
   try {
     const admin = createAdminClient();
@@ -61,17 +44,36 @@ async function getLatestVersion(): Promise<string | null> {
   }
 }
 
-export default async function LabHudPage() {
-  const version = await getLatestVersion();
+function Reticle() {
   return (
-    <div className={styles.hud} data-hud-root>
-      <HudMotion />
-      <HudBg />
-      <div aria-hidden className={styles.grain} />
-      <div aria-hidden className={styles.scan} />
-      <div aria-hidden className={styles.vignette} />
+    <svg
+      className={styles.reticle}
+      viewBox="0 0 100 100"
+      fill="none"
+      aria-hidden
+      data-hud-parallax="-16"
+    >
+      <path
+        d="M50 6 V22 M50 78 V94 M6 50 H22 M78 50 H94"
+        stroke="currentColor"
+        strokeWidth="1"
+      />
+      <path
+        d="M8 8 H20 M8 8 V20 M92 8 H80 M92 8 V20 M8 92 H20 M8 92 V80 M92 92 H80 M92 92 V80"
+        stroke="currentColor"
+        strokeWidth="1.2"
+      />
+      <circle cx="50" cy="50" r="2" fill="currentColor" />
+    </svg>
+  );
+}
 
-      {/* status bar — true features, not network telemetry */}
+export default async function Home() {
+  const version = await getLatestVersion();
+
+  return (
+    <>
+      {/* status bar — true features + live build version */}
       <div className={styles.statusbar}>
         <div className={styles.statusInner}>
           <span className={`${styles.chip} ${styles.live}`}>
@@ -98,16 +100,19 @@ export default async function LabHudPage() {
             <span className={styles.l2}>Every advantage.</span>
           </h1>
           <p className={styles.lead}>
-            Runs clean on Lunar, vanilla, Cosmic — or any server you load. Loads
-            silent, leaves no trace, and self-destructs on command.
+            {siteConfig.name} runs clean on Lunar, vanilla, Cosmic — or any
+            server you load. Loads silent, leaves no trace, and self-destructs on
+            command.
           </p>
           <div className={styles.ctaRow}>
-            <Link href="/signup" className={`${styles.btn} ${styles.btnPrimary}`}>
-              <Swords /> Get Zorro
-            </Link>
-            <Link href="/pricing" className={`${styles.btn} ${styles.btnGhost}`}>
-              View access tiers
-            </Link>
+            <Button asChild variant="hud" className="h-11 px-6">
+              <Link href="/signup">
+                <Swords /> Get {siteConfig.name}
+              </Link>
+            </Button>
+            <Button asChild variant="hudOutline" className="h-11 px-6">
+              <Link href="/pricing">View pricing</Link>
+            </Button>
           </div>
           <div className={styles.readouts}>
             <div className={styles.readout}>
@@ -137,14 +142,26 @@ export default async function LabHudPage() {
             data-hud-parallax="-10"
           />
           <Reticle />
-          <svg className={styles.reticleSpin} viewBox="0 0 100 100" fill="none" aria-hidden>
-            <circle cx="50" cy="50" r="48" stroke="currentColor" strokeWidth="0.6" strokeDasharray="2 6" />
+          <svg
+            className={styles.reticleSpin}
+            viewBox="0 0 100 100"
+            fill="none"
+            aria-hidden
+          >
+            <circle
+              cx="50"
+              cy="50"
+              r="48"
+              stroke="currentColor"
+              strokeWidth="0.6"
+              strokeDasharray="2 6"
+            />
           </svg>
           <span className={`${styles.callout} ${styles.coTop}`} data-hud-parallax="12">
             <b>●</b> TARGET LOCKED
           </span>
           <span className={`${styles.callout} ${styles.coMid}`} data-hud-parallax="18">
-            REACH <b>6.7m</b>
+            REACH <b>3.4m</b>
           </span>
           <span className={`${styles.callout} ${styles.coBot}`} data-hud-parallax="9">
             TRACE <b>none</b>
@@ -152,41 +169,20 @@ export default async function LabHudPage() {
         </div>
       </section>
 
-      {/* big brand "slide" — a full-screen ZORRO you scroll through */}
-      <section className={styles.brandSlide} data-hud-brand-slide>
-        <div className={styles.brandSticky}>
-          <span className={styles.brandWord} data-hud-brand>
-            ZORRO
-          </span>
-          <span className={styles.brandSub}>Ghost client for Minecraft</span>
-        </div>
-      </section>
+      {/* brand slide */}
+      <BrandSlide sub="Ghost client for Minecraft" />
 
-      {/* supported clients — infinite carousel */}
-      <div className={styles.marqueeSection}>
-        <p className={styles.marqueeLabel}>Supported clients</p>
-        <div className={styles.marquee} aria-label="Supported clients">
-          <div className={styles.marqueeTrack}>
-            {[...clients, ...clients, ...clients, ...clients].map((c, i) => (
-              <span key={i} className={styles.marqueeItem} aria-hidden={i >= clients.length}>
-                <Image src={c.logo} alt={c.name} width={c.w} height={c.h} />
-              </span>
-            ))}
-          </div>
-        </div>
-      </div>
+      {/* supported clients */}
+      <Marquee items={clients} label="Supported clients" />
 
       {/* features — asymmetric bento */}
       <section className={styles.section}>
         <div className={styles.wrap}>
-          <div data-hud-reveal>
-            <p className={styles.kicker}>System overview</p>
-            <h2 className={styles.h2}>Every edge, one process</h2>
-            <p className={styles.sub}>
-              Combat, movement, and visuals — fully configurable, engineered to
-              stay smooth under load.
-            </p>
-          </div>
+          <SectionHeader
+            kicker="System overview"
+            title="Every edge, one process"
+            sub="Combat, movement, and visuals — fully configurable, engineered to stay smooth under load."
+          />
           <div className={styles.bento}>
             {features.map((f, i) => {
               const cls =
@@ -221,48 +217,58 @@ export default async function LabHudPage() {
         </div>
       </section>
 
-      {/* modules — OS-detected app window */}
+      {/* inside the client — program mock in an OS window */}
       <section className={`${styles.section} ${styles.sectionFlush}`}>
         <div className={styles.wrap}>
-          <div data-hud-reveal>
-            <p className={styles.kicker}>Loadout</p>
-            <h2 className={styles.h2}>Five categories. 20+ modules.</h2>
-            <p className={styles.sub}>
-              Each tuned down to the detail and included on every tier — no
-              per-module paywalls. All driven from the app you run.
-            </p>
-          </div>
-          <div data-hud-reveal>
-            <OsWindow title="Zorro — Modules">
-              {moduleCategories.map((g, i) => (
-                <div key={g.id} className={styles.loadoutRow}>
-                  <span className={styles.loIdx}>{String(i + 1).padStart(2, "0")}</span>
-                  <span className={styles.loCat}>
-                    <g.icon /> {g.label}
-                  </span>
-                  <span className={styles.loTeaser}>{g.teaser}</span>
-                  <span className={styles.loStat}>● READY</span>
-                </div>
-              ))}
-              <div className={styles.winFoot}>
-                <Link href="/docs/modules">Open full modules reference →</Link>
-              </div>
+          <SectionHeader
+            kicker="Inside the client"
+            title="The whole thing, in one app"
+            sub="Toggle modules and tune every detail from the desktop app — changes apply live in-game. Click to inject; no commands, no setup."
+          />
+          <div data-hud-reveal style={{ marginTop: 44 }}>
+            <OsWindow title="Zorro">
+              <ZorroMockup />
             </OsWindow>
           </div>
         </div>
       </section>
 
-      {/* access tiers + single shared includes panel */}
+      {/* modules */}
       <section className={`${styles.section} ${styles.sectionFlush}`}>
         <div className={styles.wrap}>
-          <div data-hud-reveal>
-            <p className={styles.kicker}>Access tiers</p>
-            <h2 className={styles.h2}>One license. Everything unlocked.</h2>
-            <p className={styles.sub}>
-              Every tier ships the full client — duration is the only difference.
-              Longer plans cost less per month.
-            </p>
+          <SectionHeader
+            kicker="The arsenal"
+            title="Five categories. 20+ modules."
+            sub="Each tuned down to the detail and included on every tier — no per-module paywalls."
+          />
+          <div className="mt-11 grid gap-3.5 sm:grid-cols-2 lg:grid-cols-3">
+            {moduleCategories.map((g) => (
+              <Panel key={g.id} data-hud-reveal>
+                <span className={styles.cellIcon}>
+                  <g.icon />
+                </span>
+                <h3 className={styles.cellTitle}>{g.label}</h3>
+                <p className={styles.cellDesc}>{g.teaser}</p>
+                <span className={styles.panelStatus}>
+                  <span className={styles.statusDot} /> {g.modules.length} modules
+                </span>
+              </Panel>
+            ))}
           </div>
+          <p className="mt-8 font-mono text-sm" style={{ color: "var(--color-brand)" }}>
+            <Link href="/docs/modules">Open full modules reference →</Link>
+          </p>
+        </div>
+      </section>
+
+      {/* pricing */}
+      <section className={`${styles.section} ${styles.sectionFlush}`}>
+        <div className={styles.wrap}>
+          <SectionHeader
+            kicker="Access tiers"
+            title="One license. Everything unlocked."
+            sub="Every tier ships the full client — duration is the only difference. Longer plans cost less per month."
+          />
           <div className={styles.tiers}>
             {plans.map((plan) => (
               <div
@@ -277,16 +283,16 @@ export default async function LabHudPage() {
                   <span className={styles.tierCadence}>{plan.cadence}</span>
                 </div>
                 {plan.note && <div className={styles.tierNote}>{plan.note}</div>}
-                <Link
-                  href="/signup"
-                  className={`${styles.tierBtn} ${plan.featured ? styles.tierBtnPrimary : ""}`}
+                <Button
+                  asChild
+                  variant={plan.featured ? "hud" : "hudOutline"}
+                  className="mt-auto h-11"
                 >
-                  Get {siteConfig.name}
-                </Link>
+                  <Link href="/signup">Get {siteConfig.name}</Link>
+                </Button>
               </div>
             ))}
           </div>
-          {/* the included list, shown ONCE — every plan unlocks all of it */}
           <div className={styles.includes} data-hud-reveal>
             <span className={styles.includesTitle}>Every tier includes</span>
             <ul className={styles.includesList}>
@@ -303,11 +309,9 @@ export default async function LabHudPage() {
       {/* faq */}
       <section className={`${styles.section} ${styles.sectionFlush}`}>
         <div className={styles.wrap}>
-          <div data-hud-reveal>
-            <p className={styles.kicker}>Intel</p>
-            <div className={styles.faqWrap} style={{ marginTop: 8 }}>
-              <FaqSection items={productFaqs} heading="Questions, answered" />
-            </div>
+          <SectionHeader kicker="Intel" title="Questions, answered" />
+          <div data-hud-reveal style={{ marginTop: 28 }}>
+            <Faq items={productFaqs} />
           </div>
         </div>
       </section>
@@ -330,6 +334,6 @@ export default async function LabHudPage() {
           </div>
         </div>
       </section>
-    </div>
+    </>
   );
 }

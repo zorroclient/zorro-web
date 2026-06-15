@@ -31,13 +31,15 @@ export default async function AccountOverviewPage() {
     : null;
 
   return (
-    <div className="space-y-6">
-      <div>
-        <p className="text-sm text-muted-foreground">Signed in as</p>
-        <p className="font-medium">{user.email}</p>
+    <div className="space-y-5">
+      <div className="border border-white/10 bg-white/[0.025] p-6">
+        <p className="font-mono text-xs uppercase tracking-[0.16em] text-muted-foreground">
+          Signed in as
+        </p>
+        <p className="mt-1 font-medium">{user.email}</p>
       </div>
 
-      <div className="rounded-2xl border border-border/60 bg-card/40 p-7">
+      <div className="border border-white/10 bg-white/[0.025] p-7">
         <h2 className="font-heading text-lg font-semibold">Subscription</h2>
         {subscription ? (
           <div className="mt-3">

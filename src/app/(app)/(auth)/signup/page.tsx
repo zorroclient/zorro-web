@@ -7,9 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function SignupPage() {
-  return (
-    <div className="flex min-h-[calc(100vh-5rem)] items-center justify-center px-4 py-16">
-      <AuthForm mode="signup" />
-    </div>
-  );
+  return <AuthForm mode="signup" />;
 }

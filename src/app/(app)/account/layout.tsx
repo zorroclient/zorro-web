@@ -10,9 +10,16 @@ export default function AccountLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="mx-auto max-w-4xl px-4 py-16 sm:px-6">
+    <div className="relative z-[1] mx-auto max-w-4xl px-4 py-16 sm:px-6">
       <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold">Account</h1>
+        <div>
+          <p className="font-mono text-xs uppercase tracking-[0.2em] text-brand">
+            Account
+          </p>
+          <h1 className="mt-1 font-heading text-3xl font-bold tracking-tight">
+            Your account
+          </h1>
+        </div>
         <form action={signOut}>
           <Button type="submit" variant="outline" size="sm">
             Log out
