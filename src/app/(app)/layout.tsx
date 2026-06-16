@@ -10,7 +10,7 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className={styles.surface}>
+    <div className={`${styles.surface} ${styles.surfaceApp}`}>
       <Atmosphere intensity="calm" />
       {children}
     </div>

@@ -171,6 +171,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             type="email"
             autoComplete="email"
             value={email}
+            className="rounded-none"
             onChange={(e) => {
               setEmail(e.target.value);
               if (emailError) setEmailError(null);
@@ -210,7 +211,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 if (passwordError) setPasswordError(null);
               }}
               disabled={busy}
-              className="pr-10"
+              className="pr-10 rounded-none"
               aria-invalid={passwordError ? true : undefined}
               aria-describedby={passwordError ? "password-error" : undefined}
             />

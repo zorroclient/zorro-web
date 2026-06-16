@@ -99,16 +99,32 @@ export function Atmosphere({
       traces = Array.from({ length: count }, makeTrace);
     };
 
-    const resize = () => {
-      w = window.innerWidth;
-      h = window.innerHeight;
+    let prevW = 0;
+    let prevH = 0;
+    const applySize = () => {
+      const nw = window.innerWidth;
+      const nh = window.innerHeight;
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
-      canvas.width = w * dpr;
-      canvas.height = h * dpr;
-      canvas.style.width = `${w}px`;
-      canvas.style.height = `${h}px`;
+      canvas.width = nw * dpr;
+      canvas.height = nh * dpr;
+      canvas.style.width = `${nw}px`;
+      canvas.style.height = `${nh}px`;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      seed();
+      w = nw;
+      h = nh;
+      // Only regenerate traces on a width change or a large height change
+      // (orientation). This ignores the small, constant height changes from a
+      // mobile URL bar showing/hiding, which otherwise reseeded on every scroll.
+      if (nw !== prevW || Math.abs(nh - prevH) > 240) {
+        prevW = nw;
+        prevH = nh;
+        seed();
+      }
+    };
+    let resizeTimer = 0;
+    const onResize = () => {
+      window.clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(applySize, 120);
     };
 
     const draw = (dt: number) => {
@@ -177,8 +193,8 @@ export function Atmosphere({
       }
     };
 
-    resize();
-    window.addEventListener("resize", resize);
+    applySize();
+    window.addEventListener("resize", onResize);
     document.addEventListener("visibilitychange", onVisibility);
 
     if (reduce) draw(0);
@@ -186,7 +202,8 @@ export function Atmosphere({
 
     return () => {
       cancelAnimationFrame(raf);
-      window.removeEventListener("resize", resize);
+      window.clearTimeout(resizeTimer);
+      window.removeEventListener("resize", onResize);
       document.removeEventListener("visibilitychange", onVisibility);
     };
   }, [calm]);

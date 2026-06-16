@@ -13,7 +13,7 @@ export const metadata: Metadata = {
 
 export default function ModulesDocsPage() {
   return (
-    <div className="relative z-[1] mx-auto max-w-6xl px-4 pb-16 pt-32 sm:px-6 lg:pb-24 lg:pt-40">
+    <div className="relative z-[1] mx-auto max-w-[76rem] px-5 pb-16 pt-32 sm:px-8 lg:pb-24 lg:pt-40">
       <div className="max-w-2xl">
         <Link
           href="/docs"
@@ -44,7 +44,7 @@ export default function ModulesDocsPage() {
           {moduleCategories.map((cat) => (
             <section key={cat.id} id={cat.id} className="scroll-mt-28">
               <div className="flex items-center gap-3">
-                <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+                <span className="inline-flex h-9 w-9 items-center justify-center rounded-none border border-brand/30 bg-brand/10 text-brand">
                   <cat.icon className="h-5 w-5" />
                 </span>
                 <h2 className="text-2xl font-bold">{cat.label}</h2>
@@ -55,7 +55,7 @@ export default function ModulesDocsPage() {
                 {cat.modules.map((mod) => (
                   <div
                     key={mod.name}
-                    className="rounded-xl border border-border/60 bg-card/40 p-5"
+                    className="rounded-none border border-border/60 bg-card/40 p-5"
                   >
                     <h3 className="font-heading text-lg font-semibold">
                       {mod.name}

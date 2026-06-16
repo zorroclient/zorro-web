@@ -21,7 +21,6 @@
     --edge: 1.25rem;
 
     position: relative;
-    min-height: 100vh;
     background: var(--bg);
     color: var(--txt);
     overflow-x: clip;
@@ -30,6 +29,12 @@
 /* marketing pages slide the hero up under the translucent sticky header */
 .bleedTop {
     margin-top: -5rem;
+    min-height: 100svh;
+}
+/* functional (app) pages: fill the viewport minus the sticky header (no extra
+   5rem of scroll from a full 100vh surface sitting below the header) */
+.surfaceApp {
+    min-height: calc(100svh - 5rem);
 }
 
 /* animated constellation background (see hud-bg.tsx) */
@@ -98,6 +103,8 @@
     position: relative;
     z-index: 2; /* sits above the hero so content occludes it on scroll */
     padding-block: clamp(64px, 8vw, 120px);
+    /* clears the sticky header when jumped to via an in-page anchor */
+    scroll-margin-top: 5.5rem;
     /* translucent so the animated background drifts through faintly */
     background: rgb(6 7 11 / 0.8);
 }
@@ -198,11 +205,14 @@
     z-index: 1;
     max-width: 76rem;
     margin-inline: auto;
-    padding: clamp(48px, 7vw, 96px) var(--edge) clamp(64px, 8vw, 110px);
+    /* fill the viewport below the header + status bar and center the content */
+    min-height: calc(100svh - 7rem);
+    padding: clamp(32px, 5vw, 56px) var(--edge);
     display: grid;
     grid-template-columns: 1.1fr 0.9fr;
     gap: 40px;
     align-items: center;
+    align-content: center;
 }
 @media (max-width: 860px) {
     .hero {
@@ -343,6 +353,9 @@
 .figureWrap {
     position: relative;
     aspect-ratio: 1 / 1;
+    width: 100%;
+    max-width: 520px;
+    margin-inline: auto;
     display: grid;
     place-items: center;
     opacity: 0;
@@ -387,11 +400,17 @@
 }
 .reticleSpin {
     position: absolute;
-    inset: 14%;
+    inset: 8% 15%;
+    /* center via margin (NOT transform) so the rotate animation doesn't
+       override the centering and throw the ring off — concentric on any screen */
+    /* margin: auto; */
+    width: 70%;
+    aspect-ratio: 1;
     z-index: 2;
     pointer-events: none;
-    color: var(--accent-dim);
-    animation: hud-spin 18s linear infinite;
+    border: 2.5px dashed var(--accent-dim);
+    border-radius: 50%;
+    animation: hud-spin 25s linear infinite;
 }
 .callout {
     position: absolute;
@@ -413,11 +432,11 @@
 }
 .coTop {
     top: 12%;
-    right: -2%;
+    right: 2%;
 }
 .coMid {
     top: 47%;
-    left: -4%;
+    left: 0;
 }
 .coBot {
     bottom: 12%;
@@ -425,22 +444,26 @@
 }
 
 /* ---- infinite client marquee ---- */
-.marqueeSection {
+.marqueeWrap {
     position: relative;
     z-index: 2;
     background: rgb(6 7 11 / 0.8);
-    border-block: 1px solid var(--line);
-    padding-block: 22px;
+    padding-block: clamp(40px, 6vw, 64px);
 }
 .marqueeLabel {
     max-width: 76rem;
-    margin: 0 auto 16px;
+    margin: 0 auto 20px;
     padding-inline: var(--edge);
     font-family: var(--mono);
     font-size: 11px;
     letter-spacing: 0.2em;
     text-transform: uppercase;
     color: var(--accent);
+}
+/* the bordered rail — label sits ABOVE this, outside the box */
+.marqueeRail {
+    border-block: 1px solid var(--line);
+    padding-block: 26px;
 }
 .marquee {
     overflow: hidden;
@@ -690,6 +713,106 @@
     border-radius: 50%;
     background: var(--accent);
     box-shadow: 0 0 8px 0 var(--accent);
+}
+
+/* ---- modules "loadout" spec rows (richer than a plain card grid) ---- */
+.modList {
+    position: relative;
+    margin-top: 44px;
+    border: 1px solid var(--line-bright);
+    background: rgb(8 9 13 / 0.6);
+}
+.modList::before,
+.modList::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-color: var(--accent);
+    border-style: solid;
+    opacity: 0.7;
+}
+.modList::before {
+    top: -1px;
+    left: -1px;
+    border-width: 1px 0 0 1px;
+}
+.modList::after {
+    bottom: -1px;
+    right: -1px;
+    border-width: 0 1px 1px 0;
+}
+.modRow {
+    display: grid;
+    grid-template-columns: 58px 1fr;
+    gap: 0 22px;
+    padding: 22px clamp(18px, 3vw, 30px);
+    border-top: 1px solid var(--line);
+    transition: background 0.2s ease;
+}
+.modRow:first-child {
+    border-top: 0;
+}
+.modRow:hover {
+    background: rgb(255 122 24 / 0.035);
+}
+.modIndex {
+    font-family: var(--font-heading);
+    font-size: 30px;
+    font-weight: 700;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1px var(--accent-dim);
+}
+.modHead {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+.modCat {
+    display: inline-flex;
+    align-items: center;
+    gap: 9px;
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--accent);
+}
+.modCat svg {
+    width: 16px;
+    height: 16px;
+}
+.modCount {
+    margin-left: auto;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--txt-dim);
+}
+.modChips {
+    margin-top: 12px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+}
+.modChip {
+    font-size: 12.5px;
+    color: var(--txt);
+    border: 1px solid var(--line);
+    background: var(--panel);
+    padding: 4px 10px;
+}
+@media (max-width: 560px) {
+    .modRow {
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+    .modIndex {
+        font-size: 22px;
+    }
 }
 
 /* ---- modules OS window (chrome lives in os-window.tsx) ---- */
@@ -990,7 +1113,7 @@
 }
 /* the included list, shown ONCE — every tier ships the full client */
 .includes {
-    margin-top: 14px;
+    margin-top: 2px;
     border: 1px solid var(--line);
     padding: 20px 22px;
     background: var(--panel);

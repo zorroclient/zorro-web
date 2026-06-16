@@ -36,7 +36,7 @@ const sections = [
 
 export default function DocsPage() {
   return (
-    <div className="relative z-[1] mx-auto max-w-6xl px-4 pb-16 pt-32 sm:px-6 lg:pb-24 lg:pt-40">
+    <div className="relative z-[1] mx-auto max-w-[76rem] px-5 pb-16 pt-32 sm:px-8 lg:pb-24 lg:pt-40">
       {/* header */}
       <div className="max-w-2xl">
         <p className="text-xs uppercase tracking-widest text-brand">
@@ -61,10 +61,10 @@ export default function DocsPage() {
         <div className="max-w-3xl space-y-16">
           <Link
             href="/docs/modules"
-            className="flex items-center justify-between gap-4 rounded-xl border border-brand/30 bg-brand/5 p-5 transition-colors hover:border-brand/50"
+            className="flex items-center justify-between gap-4 rounded-none border border-brand/30 bg-brand/5 p-5 transition-colors hover:border-brand/50"
           >
             <span className="flex items-center gap-4">
-              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+              <span className="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded-none border border-brand/30 bg-brand/10 text-brand">
                 <Layers className="h-5 w-5" />
               </span>
               <span>
@@ -177,7 +177,7 @@ export default function DocsPage() {
               {moduleCategories.map((group) => (
                 <div
                   key={group.id}
-                  className="rounded-xl border border-border/60 bg-card/40 p-5"
+                  className="rounded-none border border-border/60 bg-card/40 p-5"
                 >
                   <h3 className="font-heading text-sm font-semibold">
                     {group.label}
@@ -186,7 +186,7 @@ export default function DocsPage() {
                     {group.modules.map((m) => (
                       <span
                         key={m.name}
-                        className="rounded-md border border-border/60 bg-muted/40 px-2.5 py-1 text-xs text-foreground/80"
+                        className="rounded-none border border-border/60 bg-muted/40 px-2.5 py-1 text-xs text-foreground/80"
                       >
                         {m.name}
                       </span>
@@ -244,7 +244,7 @@ export default function DocsPage() {
             </p>
           </Doc>
 
-          <div className="rounded-xl border border-brand/30 bg-linear-to-br from-brand/10 to-transparent p-6">
+          <div className="rounded-none border border-brand/30 bg-linear-to-br from-brand/10 to-transparent p-6">
             <h2 className="font-heading text-lg font-semibold">
               Still have questions?
             </h2>
@@ -280,7 +280,7 @@ function Doc({
   return (
     <section id={id} className="scroll-mt-28">
       <h2 className="flex items-center gap-3 text-2xl font-bold">
-        <span className="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-brand/30 bg-brand/10 text-brand">
+        <span className="inline-flex h-9 w-9 items-center justify-center rounded-none border border-brand/30 bg-brand/10 text-brand">
           <Icon className="h-5 w-5" />
         </span>
         {title}

@@ -15,19 +15,21 @@ export function Marquee({
 }) {
   const copies = [...items, ...items, ...items, ...items];
   return (
-    <div className={styles.marqueeSection}>
+    <div className={styles.marqueeWrap}>
       {label && <p className={styles.marqueeLabel}>{label}</p>}
-      <div className={styles.marquee} aria-label={label}>
-        <div className={styles.marqueeTrack}>
-          {copies.map((c, i) => (
-            <span
-              key={i}
-              className={styles.marqueeItem}
-              aria-hidden={i >= items.length}
-            >
-              <Image src={c.logo} alt={c.name} width={c.w} height={c.h} />
-            </span>
-          ))}
+      <div className={styles.marqueeRail}>
+        <div className={styles.marquee} aria-label={label}>
+          <div className={styles.marqueeTrack}>
+            {copies.map((c, i) => (
+              <span
+                key={i}
+                className={styles.marqueeItem}
+                aria-hidden={i >= items.length}
+              >
+                <Image src={c.logo} alt={c.name} width={c.w} height={c.h} />
+              </span>
+            ))}
+          </div>
         </div>
       </div>
     </div>

@@ -8,7 +8,7 @@ export const metadata: Metadata = {
 
 export default function AuthCodeErrorPage() {
   return (
-    <div className="flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center px-4 py-16 text-center">
+    <div className="relative z-[1] flex min-h-[calc(100vh-5rem)] flex-col items-center justify-center px-4 py-16 text-center">
       <h1 className="text-2xl font-bold sm:text-3xl">
         Sign-in couldn&apos;t complete
       </h1>
