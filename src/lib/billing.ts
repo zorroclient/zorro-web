@@ -5,8 +5,8 @@
 const PRICE_IDS: Record<string, string> = {
   monthly: process.env.STRIPE_PRICE_MONTHLY ?? "price_1TdUk0QVYUgJ2xZIpvw4q4pn",
   biannual:
-    process.env.STRIPE_PRICE_BIANNUAL ?? "price_1TdUk0QVYUgJ2xZIVfst6Bdc",
-  annual: process.env.STRIPE_PRICE_ANNUAL ?? "price_1TdUk0QVYUgJ2xZIVbYPLDWK",
+    process.env.STRIPE_PRICE_BIANNUAL ?? "price_1TjRXQQVYUgJ2xZINnV7Nn5q",
+  annual: process.env.STRIPE_PRICE_ANNUAL ?? "price_1TjRXQQVYUgJ2xZIpOzsgtja",
 };
 
 export function priceIdForPlan(planId: string): string | null {
