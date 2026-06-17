@@ -10,7 +10,7 @@ export default function AccountLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="relative z-[1] mx-auto max-w-4xl px-4 py-16 sm:px-6">
+    <div className="relative z-[1] mx-auto w-full max-w-4xl px-4 py-16 sm:px-6">
       <div className="flex items-center justify-between">
         <div>
           <p className="font-mono text-xs uppercase tracking-[0.2em] text-brand">
