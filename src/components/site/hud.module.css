@@ -31,10 +31,12 @@
     margin-top: -5rem;
     min-height: 100svh;
 }
-/* functional (app) pages: fill the viewport minus the sticky header (no extra
-   5rem of scroll from a full 100vh surface sitting below the header) */
+/* functional (app) pages: fill the space between header and footer via flex
+   (main is a flex column) so short pages don't overflow by the footer's height */
 .surfaceApp {
-    min-height: calc(100svh - 5rem);
+    display: flex;
+    flex-direction: column;
+    flex: 1;
 }
 
 /* animated constellation background (see hud-bg.tsx) */

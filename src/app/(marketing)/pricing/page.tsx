@@ -29,12 +29,13 @@ export default function PricingPage() {
           kicker="Access tiers"
           title="One license. Everything unlocked."
           sub={`Every plan unlocks all of ${siteConfig.name} — pick how long you want it. Longer plans cost less per month.`}
+          reveal={false}
         />
 
         <PricingPlans />
 
         {/* what's included — once */}
-        <div className={styles.includes} data-hud-reveal style={{ marginTop: 24 }}>
+        <div className={styles.includes} style={{ marginTop: 24 }}>
           <span className={styles.includesTitle}>Every plan includes</span>
           <ul className={styles.includesList}>
             {included.map((item) => (

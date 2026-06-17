@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { gsap } from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import Lenis from "lenis";
@@ -14,6 +15,12 @@ import Lenis from "lenis";
 // [data-motion="on"], which we only set once GSAP is confirmed live — so
 // no-JS / failure / reduced-motion all render the full page.
 export function ScrollMotion() {
+  // The (marketing) layout persists across client-side navigation, so this
+  // effect must re-run per route — otherwise a new page's [data-hud-reveal]
+  // elements get the gated opacity:0 start-state with no ScrollTrigger to
+  // reveal them (they'd stay invisible until a full reload).
+  const pathname = usePathname();
+
   useEffect(() => {
     const root = document.querySelector<HTMLElement>("[data-hud-root]");
     if (!root) return;
@@ -119,7 +126,7 @@ export function ScrollMotion() {
       ScrollTrigger.getAll().forEach((t) => t.kill());
       root.removeAttribute("data-motion");
     };
-  }, []);
+  }, [pathname]);
 
   return null;
 }
