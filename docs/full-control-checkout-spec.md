@@ -1,15 +1,14 @@
 # Full-Control Checkout — Spec
 
-> Status: spec / not yet implemented. Goal: replace the hosted Stripe Checkout
-> redirect with an on-site checkout we fully own and style.
-> Author handoff: 2026-06-02. Branch context: `stripe-billing`.
+> Status: implemented on `new-ui` (2026-07-15). The hosted Checkout helper is
+> retained temporarily as a rollback path, but pricing now enters the on-site
+> checkout. Original author handoff: 2026-06-02.
 
 ## Goal
 
-Today "Get Zorro" calls `createCheckoutSession()` which redirects to Stripe's
-**hosted** Checkout page. We want the payment step to live **on our own page**,
-styled to match the site (orange `#ff7a18` / dark theme), instead of bouncing to
-a Stripe-branded URL.
+"Get Zorro" now opens `/checkout?plan=<id>`. The payment step lives **on our own
+page**, styled to match the site (orange `#ff7a18` / dark theme), instead of
+bouncing to a Stripe-hosted URL.
 
 "Full control" caveat: with the **Payment Element** we own the entire checkout
 *page* (layout, copy, summary, theming) and theme the payment widget via the
@@ -18,12 +17,12 @@ iframe (PCI) — we can theme them (colors, fonts, radius, spacing) but not
 restyle their internal DOM. That's the ceiling of "full control" without taking
 on PCI scope.
 
-## Current state (reuse, don't rebuild)
+## Reused foundation
 
 - `src/lib/stripe.ts` — server Stripe client (`getStripe()`).
 - `src/lib/billing.ts` — `priceIdForPlan()` / `planForPriceId()`.
-- `src/lib/billing-actions.ts` — `createCheckoutSession()` (hosted, to be
-  replaced) + `createPortalSession()` (keep).
+- `src/lib/billing-actions.ts` — hosted `createCheckoutSession()` retained as a
+  temporary fallback + `createPortalSession()` (keep).
 - `src/app/api/stripe/webhook/route.ts` — already provisions the `subscriptions`
   table on `checkout.session.completed` + `customer.subscription.*`.
 - `src/lib/subscription.ts` — `getSubscription()` reads entitlement.
@@ -32,30 +31,38 @@ on PCI scope.
 The webhook + entitlement layer **does not change** — it already keys off the
 subscription, regardless of how the payment was collected.
 
-## Target architecture
+## Implemented architecture
 
 ### Dependencies & env
-- Add `@stripe/stripe-js` + `@stripe/react-stripe-js`.
-- Add `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (publishable `pk_…`) to `.env.local`.
+- `@stripe/stripe-js` + `@stripe/react-stripe-js`.
+- `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` (publishable `pk_…`) in `.env.local`.
 
-### Server — create an incomplete subscription
-New server action `createSubscriptionIntent(planId)` (replaces the redirect):
-1. Auth + find/create Stripe customer (same logic as `createCheckoutSession`).
-2. `stripe.subscriptions.create({ customer, items:[{price}], payment_behavior:
-   'default_incomplete', payment_settings:{ save_default_payment_method:
-   'on_subscription' }, expand:['latest_invoice.payment_intent'], metadata:{
-   supabase_user_id, plan } })`.
-3. Return `{ subscriptionId, clientSecret }` (the PaymentIntent client secret).
-   No redirect.
+### Server — custom Checkout Session
+`POST /api/stripe/checkout-session`:
+1. Validates same-origin POST, plan, Supabase user, and existing entitlement.
+2. Finds/creates the user's stable Stripe customer via
+   `src/lib/stripe-customer.ts`.
+3. Reuses an open custom session for the same customer/plan where possible.
+4. Creates `stripe.checkout.sessions.create({ ui_mode:'elements',
+   mode:'subscription', customer, line_items, allow_promotion_codes:true,
+   metadata, subscription_data, return_url })`.
+5. Returns the Checkout Session `client_secret`; no hosted-page redirect.
+
+Stripe now recommends Checkout Sessions with Elements for most custom
+subscription flows. This supersedes the original handoff's lower-level
+`default_incomplete` Payment Intent design and keeps Stripe's managed checkout
+state, discounts, and subscription lifecycle.
 
 ### Client — `/checkout?plan=<id>` page
-- Client component: `loadStripe(NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY)`.
-- Fetch the client secret from the server action on mount (or pass via RSC).
-- `<Elements stripe={stripe} options={{ clientSecret, appearance }}>` →
-  `<PaymentElement />` + an order summary (plan, price, cadence) we render
-  ourselves.
-- Submit → `stripe.confirmPayment({ elements, confirmParams: { return_url:
-  `${origin}/account/download?checkout=success` } })`.
+- `CheckoutElementsProvider` initializes Stripe's Checkout Elements SDK using
+  the client-secret promise.
+- `ExpressCheckoutElement` provides eligible PayPal, Apple Pay, Google Pay, and
+  Link buttons.
+- `PaymentElement` provides cards and other compatible, Dashboard-enabled
+  payment methods.
+- The order summary, promotion-code field, terms, submit button, loading/error
+  states, and responsive page layout are owned by Zorro.
+- Submit uses `checkout.confirm({ redirect:'if_required' })`.
 
 ### Appearance (theming)
 Build an `appearance` object from our design tokens: `theme:'night'`, brand
@@ -64,61 +71,69 @@ fonts, matching border radius. Lives in one helper so it stays in sync with
 `globals.css`.
 
 ### Return / post-payment
-- `return_url` lands on `/account/download` (already gated by `getSubscription`).
-- Provisioning is done by the **webhook**, not the return page — handle the
-  brief race (webhook lag) with a "finalizing…" state that polls
-  `getSubscription` or the PaymentIntent status before showing the unlocked UI.
+- `return_url` lands on `/checkout/return?session_id=...`.
+- The return page verifies that the Checkout Session belongs to the signed-in
+  Supabase user.
+- Provisioning is done by the **webhook**, not the return page. The result UI
+  refreshes briefly through webhook lag, then links to the gated download.
 
-### Webhook additions
-Current handlers are enough for the hosted flow; for the Elements flow also
-handle **`invoice.paid` / `invoice.payment_succeeded`** (first-invoice
-activation) and confirm `customer.subscription.created/updated` flips status to
-`active`. (`checkout.session.completed` will no longer fire — that's fine.)
+### Webhooks
+Custom Checkout Sessions still emit `checkout.session.completed`. The existing
+handler retrieves and upserts the subscription, while
+`customer.subscription.created/updated/deleted` keeps later lifecycle changes
+in sync.
 
 ## Payment flow
 1. User clicks Get Zorro → `/checkout?plan=biannual`.
-2. Page calls `createSubscriptionIntent` → gets `clientSecret`.
-3. PaymentElement renders (themed), user pays (handles 3DS/SCA inline).
-4. `confirmPayment` → redirect to `return_url`.
-5. Stripe fires `invoice.paid` + `subscription.updated` → webhook upserts
-   `subscriptions` row `active`.
+2. Page calls the checkout-session route → gets `clientSecret`.
+3. Express Checkout and Payment Element render with Zorro theming.
+4. `checkout.confirm` completes inline or redirects when the method requires it.
+5. Stripe fires `checkout.session.completed` and subscription lifecycle events
+   → webhook upserts the `subscriptions` row.
 6. `/account/download` shows unlocked (after the finalizing poll resolves).
 
 ## States & edge cases
-- **SCA/3DS**: handled by `confirmPayment` (may redirect & return).
+- **SCA/3DS**: handled by `checkout.confirm` (may redirect & return).
 - **Declined / failed**: show inline error, stay on page, allow retry.
 - **Processing**: PaymentIntent `processing` → show pending, rely on webhook.
-- **Abandoned**: incomplete subscription auto-expires (Stripe default ~23h);
-  no entitlement written.
+- **Abandoned**: the open Checkout Session expires; no entitlement is written.
 - **Webhook lag race**: finalizing state on the return page (don't assume
   instant).
-- **Idempotency**: reuse the customer (DB `stripe_customer_id`); don't create a
-  new incomplete sub on every page load — cache/return the existing one.
+- **Idempotency**: reuse the customer (DB `stripe_customer_id`) and an open
+  Checkout Session for the same plan instead of creating one on every load.
 
 ## What stays the same
 `subscriptions` table, `getSubscription()`, download/account gating,
 `createPortalSession()` (manage/cancel). Only the *collection* step changes.
 
 ## Rollout
-1. Build `/checkout` behind the existing pricing buttons (repoint them from the
-   server-action redirect to `/checkout?plan=`).
-2. Keep `createCheckoutSession` until `/checkout` is validated, then remove.
-3. Set `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` in all envs.
+1. [x] Build `/checkout` and repoint pricing buttons.
+2. [x] Preserve the chosen checkout path through signup/login/OAuth.
+3. [x] Keep hosted `createCheckoutSession` temporarily for rollback.
+4. [ ] Validate card, 3DS, promotion-code, PayPal, and webhook flows in Stripe
+   sandbox, then remove the hosted helper.
+5. [ ] Set/confirm `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` in every deployed env.
 
 ## Open decisions
-- Dedicated `/checkout` page vs. a modal/drawer over pricing.
-- **Promotion codes**: hosted Checkout's `allow_promotion_codes` is gone with
-  Elements — if we want promos, add a code field and apply a coupon/discount to
-  the subscription server-side.
+- Dedicated `/checkout` page chosen over a modal/drawer.
+- Promotion codes implemented using Checkout Elements' `applyPromotionCode` /
+  `removePromotionCode` actions.
 - Tax / billing address collection (Stripe Tax vs. none).
 
-## Effort
-~1 day. New: `/checkout` page + client component, `appearance` helper,
-`createSubscriptionIntent` action, 2 webhook cases, deps + env. Reuses customer
-logic, webhook, entitlement, gating.
+## Implementation files
+- `src/app/(app)/checkout/page.tsx`
+- `src/app/(app)/checkout/return/page.tsx`
+- `src/app/api/stripe/checkout-session/route.ts`
+- `src/components/checkout/*`
+- `src/lib/stripe-appearance.ts`
+- `src/lib/stripe-customer.ts`
 
 ## Out of scope (future)
-PayPal and crypto don't do recurring via Stripe (see chat 2026-06-02). When
-added, their buttons would sit **on this `/checkout` page alongside** the Stripe
-PaymentElement (each routing to its own backend), not inside the Element. The
-`subscriptions` table already unifies entitlement across processors.
+PayPal can now run through Stripe for eligible European accounts, including
+subscriptions. The Netherlands is eligible, but PayPal must still be activated
+and approved in the Stripe Dashboard; the Express Checkout slot will surface it
+automatically when available.
+
+Crypto remains future work. Stripe stablecoin subscriptions are currently a
+private preview, so no separate processor or entitlement path is added in this
+pass.
