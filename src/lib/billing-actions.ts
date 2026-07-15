@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
+import { getOrCreateStripeCustomer } from "@/lib/stripe-customer";
 import { priceIdForPlan } from "@/lib/billing";
 import { getSubscription } from "@/lib/subscription";
 
@@ -35,45 +36,7 @@ export async function createCheckoutSession(planId: string) {
   if (existingSub) redirect("/account?error=already-subscribed");
 
   const stripe = getStripe();
-
-  // One STABLE Stripe customer per user — this is what lets Stripe's
-  // "no multiple subscriptions" setting actually enforce no duplicates (it
-  // dedupes within a customer, so a new customer per checkout defeats it).
-  const admin = createAdminClient();
-  const { data: existing } = await admin
-    .from("subscriptions")
-    .select("stripe_customer_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
-
-  let customerId = existing?.stripe_customer_id as string | undefined;
-
-  // Fall back to a customer we already created for this user (e.g. the webhook
-  // hasn't written a row yet) before making a new one.
-  if (!customerId) {
-    const found = await stripe.customers.search({
-      query: `metadata['supabase_user_id']:'${user.id}'`,
-      limit: 1,
-    });
-    customerId = found.data[0]?.id;
-  }
-  if (!customerId) {
-    const customer = await stripe.customers.create({
-      email: user.email ?? undefined,
-      metadata: { supabase_user_id: user.id },
-    });
-    customerId = customer.id;
-  }
-
-  // Persist the mapping immediately so a rapid second checkout reuses this same
-  // customer even before any webhook lands. (status defaults to 'incomplete',
-  // which getSubscription treats as "no access" — so this can't falsely unlock.)
-  await admin
-    .from("subscriptions")
-    .upsert(
-      { user_id: user.id, stripe_customer_id: customerId },
-      { onConflict: "user_id" },
-    );
+  const customerId = await getOrCreateStripeCustomer(user);
 
   const origin = await originUrl();
   const session = await stripe.checkout.sessions.create({

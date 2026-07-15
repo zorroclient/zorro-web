@@ -1,12 +1,12 @@
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { plans } from "@/lib/pricing";
 import { siteConfig } from "@/lib/nav";
 import { cn } from "@/lib/utils";
-import { createCheckoutSession } from "@/lib/billing-actions";
 import styles from "@/components/site/hud.module.css";
 
-// HUD-styled pricing tiers. Each submit posts to the Stripe checkout server
-// action (unchanged); the "what's included" list is shown once by the page.
+// HUD-styled pricing tiers. Each CTA enters our on-site checkout; the payment
+// session itself is created only after authentication on that page.
 export function PricingPlans({ className }: { className?: string }) {
   return (
     <div className={cn(styles.tiers, className)}>
@@ -22,18 +22,17 @@ export function PricingPlans({ className }: { className?: string }) {
             <span className={styles.tierCadence}>{plan.cadence}</span>
           </div>
           {plan.note && <div className={styles.tierNote}>{plan.note}</div>}
-          <form
-            action={createCheckoutSession.bind(null, plan.id)}
-            className="mt-auto pt-6"
-          >
+          <div className="mt-auto pt-6">
             <Button
-              type="submit"
+              asChild
               variant={plan.featured ? "hud" : "hudOutline"}
               className="h-11 w-full"
             >
-              Get {siteConfig.name}
+              <Link href={`/checkout?plan=${encodeURIComponent(plan.id)}`}>
+                Get {siteConfig.name}
+              </Link>
             </Button>
-          </form>
+          </div>
         </div>
       ))}
     </div>

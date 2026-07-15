@@ -44,7 +44,7 @@ export const pricingFaqs: Faq[] = [
   },
   {
     q: "What payment methods do you accept?",
-    a: "Secure card checkout. Your payment details never touch our servers — they're handled by our payment processor.",
+    a: "Checkout shows the secure payment methods available for your device and region, including cards and supported wallets. Your payment details never touch our servers — they're handled by Stripe.",
   },
   {
     q: "Does my plan renew automatically?",

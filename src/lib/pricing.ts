@@ -37,6 +37,10 @@ export const plans: Plan[] = [
   },
 ];
 
+export function getPlan(planId: string | null | undefined): Plan | null {
+  return plans.find((plan) => plan.id === planId) ?? null;
+}
+
 // Every plan unlocks the full product — duration is the only difference.
 export const included = [
   "Every module — combat, movement, visuals",

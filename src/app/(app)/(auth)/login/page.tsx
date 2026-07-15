@@ -6,6 +6,12 @@ export const metadata: Metadata = {
   description: "Log in to your Zorro account.",
 };
 
-export default function LoginPage() {
-  return <AuthForm mode="login" />;
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ next?: string | string[] }>;
+}) {
+  const rawNext = (await searchParams).next;
+  const nextPath = Array.isArray(rawNext) ? rawNext[0] : rawNext;
+  return <AuthForm mode="login" nextPath={nextPath} />;
 }

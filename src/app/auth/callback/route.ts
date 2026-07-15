@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { safeNextPath } from "@/lib/safe-next-path";
 
 // Handles the OAuth (Google/Discord) and email-confirmation code exchange.
 export async function GET(request: Request) {
     const { searchParams, origin } = new URL(request.url);
     const code = searchParams.get("code");
     // `next` is where to send the user after a successful exchange.
-    let next = searchParams.get("next") ?? "/account";
-    if (!next.startsWith("/")) next = "/account";
+    const next = safeNextPath(searchParams.get("next"));
 
     if (code) {
         const supabase = await createClient();
