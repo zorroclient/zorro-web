@@ -14,6 +14,7 @@ import {
   validateEmail,
   validateRequiredPassword,
   validateNewPassword,
+  validatePasswordConfirmation,
   friendlyAuthError,
 } from "@/lib/validation";
 import { safeNextPath } from "@/lib/safe-next-path";
@@ -53,12 +54,18 @@ export function AuthForm({
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] =
+    useState(false);
   const [pending, setPending] = useState<null | "email" | Provider>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordConfirmationError, setPasswordConfirmationError] = useState<
+    string | null
+  >(null);
 
   const callbackUrl = () =>
     `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectAfterAuth)}`;
@@ -91,9 +98,14 @@ export function AuthForm({
       mode === "signup"
         ? validateNewPassword(password)
         : validateRequiredPassword(password);
+    const passwordConfirmationErr =
+      mode === "signup"
+        ? validatePasswordConfirmation(password, passwordConfirmation)
+        : null;
     setEmailError(emailErr);
     setPasswordError(passwordErr);
-    if (emailErr || passwordErr) return;
+    setPasswordConfirmationError(passwordConfirmationErr);
+    if (emailErr || passwordErr || passwordConfirmationErr) return;
 
     setPending("email");
     const supabase = createClient();
@@ -218,6 +230,9 @@ export function AuthForm({
               onChange={(e) => {
                 setPassword(e.target.value);
                 if (passwordError) setPasswordError(null);
+                if (passwordConfirmationError) {
+                  setPasswordConfirmationError(null);
+                }
               }}
               disabled={busy}
               className="pr-10 rounded-none"
@@ -255,6 +270,63 @@ export function AuthForm({
             )
           )}
         </div>
+
+        {mode === "signup" && (
+          <div className="space-y-2">
+            <Label htmlFor="password-confirmation">Confirm password</Label>
+            <div className="relative">
+              <Input
+                id="password-confirmation"
+                type={showPasswordConfirmation ? "text" : "password"}
+                autoComplete="new-password"
+                value={passwordConfirmation}
+                onChange={(e) => {
+                  setPasswordConfirmation(e.target.value);
+                  if (passwordConfirmationError) {
+                    setPasswordConfirmationError(null);
+                  }
+                }}
+                disabled={busy}
+                className="pr-10 rounded-none"
+                aria-invalid={
+                  passwordConfirmationError ? true : undefined
+                }
+                aria-describedby={
+                  passwordConfirmationError
+                    ? "password-confirmation-error"
+                    : undefined
+                }
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswordConfirmation((shown) => !shown)}
+                disabled={busy}
+                aria-label={
+                  showPasswordConfirmation
+                    ? "Hide password confirmation"
+                    : "Show password confirmation"
+                }
+                aria-pressed={showPasswordConfirmation}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              >
+                {showPasswordConfirmation ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            {passwordConfirmationError && (
+              <p
+                id="password-confirmation-error"
+                className="text-sm text-destructive"
+                role="alert"
+              >
+                {passwordConfirmationError}
+              </p>
+            )}
+          </div>
+        )}
 
         {error && (
           <p className="text-sm text-destructive" role="alert">
