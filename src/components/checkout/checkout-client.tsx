@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import {
@@ -26,13 +26,23 @@ type ClientSecretResponse = {
   redirectTo?: string;
 };
 
-async function fetchClientSecret(planId: string): Promise<string> {
+type SessionState = {
+  planId: string;
+  clientSecret?: string;
+  error?: string;
+};
+
+async function fetchClientSecret(
+  planId: string,
+  signal: AbortSignal,
+): Promise<string> {
   const response = await fetch("/api/stripe/checkout-session", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     credentials: "same-origin",
     cache: "no-store",
     body: JSON.stringify({ plan: planId }),
+    signal,
   });
   const payload = (await response.json()) as ClientSecretResponse;
 
@@ -46,17 +56,53 @@ async function fetchClientSecret(planId: string): Promise<string> {
 
 export function CheckoutClient({ plan, publishableKey }: CheckoutClientProps) {
   const stripe = useMemo(() => loadStripe(publishableKey), [publishableKey]);
-  const clientSecret = useMemo(() => fetchClientSecret(plan.id), [plan.id]);
+  const [session, setSession] = useState<SessionState | null>(null);
+
+  useEffect(() => {
+    const controller = new AbortController();
+
+    void fetchClientSecret(plan.id, controller.signal)
+      .then((clientSecret) =>
+        setSession({ planId: plan.id, clientSecret }),
+      )
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        setSession({
+          planId: plan.id,
+          error:
+            error instanceof Error
+              ? error.message
+              : "Checkout could not be started.",
+        });
+      });
+
+    return () => controller.abort();
+  }, [plan.id]);
+
+  const currentSession = session?.planId === plan.id ? session : null;
+  const clientSecret = currentSession?.clientSecret ?? null;
+
   const options = useMemo(
-    () => ({
-      clientSecret,
-      elementsOptions: {
-        appearance: zorroStripeAppearance,
-        loader: "auto" as const,
-      },
-    }),
+    () =>
+      clientSecret
+        ? {
+            clientSecret,
+            elementsOptions: {
+              appearance: zorroStripeAppearance,
+              loader: "auto" as const,
+            },
+          }
+        : null,
     [clientSecret],
   );
+
+  if (currentSession?.error) {
+    return <CheckoutUnavailable plan={plan} message={currentSession.error} />;
+  }
+
+  if (!options) {
+    return <CheckoutSkeleton plan={plan} />;
+  }
 
   return (
     <CheckoutElementsProvider stripe={stripe} options={options}>
@@ -73,33 +119,37 @@ function CheckoutContent({ plan }: { plan: Plan }) {
   }
 
   if (state.type === "error") {
-    return (
-      <div className={styles.grid}>
-        <section className={styles.panel}>
-          <div className={styles.panelHeader}>
-            <span className={styles.step}>Checkout unavailable</span>
-            <LockKeyhole className="size-4 text-brand" />
-          </div>
-          <div className={styles.error} role="alert">
-            {state.error.message}
-          </div>
-          <p className="mt-5 text-sm text-muted-foreground">
-            Refresh the page to try again, or return to pricing and choose a
-            different plan.
-          </p>
-          <Link
-            href="/pricing"
-            className="mt-6 inline-flex font-mono text-xs uppercase tracking-[0.12em] text-brand hover:underline"
-          >
-            Back to pricing
-          </Link>
-        </section>
-        <CheckoutSummary plan={plan} />
-      </div>
-    );
+    return <CheckoutUnavailable plan={plan} message={state.error.message} />;
   }
 
   return <CheckoutForm plan={plan} checkout={state.checkout} />;
+}
+
+function CheckoutUnavailable({ plan, message }: { plan: Plan; message: string }) {
+  return (
+    <div className={styles.grid}>
+      <section className={styles.panel}>
+        <div className={styles.panelHeader}>
+          <span className={styles.step}>Checkout unavailable</span>
+          <LockKeyhole className="size-4 text-brand" />
+        </div>
+        <div className={styles.error} role="alert">
+          {message}
+        </div>
+        <p className="mt-5 text-sm text-muted-foreground">
+          Refresh the page to try again, or return to pricing and choose a
+          different plan.
+        </p>
+        <Link
+          href="/pricing"
+          className="mt-6 inline-flex font-mono text-xs uppercase tracking-[0.12em] text-brand hover:underline"
+        >
+          Back to pricing
+        </Link>
+      </section>
+      <CheckoutSummary plan={plan} />
+    </div>
+  );
 }
 
 type Checkout = Extract<
@@ -112,6 +162,11 @@ function CheckoutForm({ plan, checkout }: { plan: Plan; checkout: Checkout }) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [expressAvailable, setExpressAvailable] = useState<boolean | null>(null);
+  const paymentButtonState = submitting
+    ? "submitting"
+    : checkout.canConfirm
+      ? "ready"
+      : "waiting";
 
   function finish(sessionId: string) {
     router.push(`/checkout/return?session_id=${encodeURIComponent(sessionId)}`);
@@ -168,6 +223,7 @@ function CheckoutForm({ plan, checkout }: { plan: Plan; checkout: Checkout }) {
               layout: { maxColumns: 2, maxRows: 2, overflow: "auto" },
               paymentMethodOrder: [
                 "paypal",
+                "amazon_pay",
                 "apple_pay",
                 "google_pay",
                 "link",
@@ -177,7 +233,7 @@ function CheckoutForm({ plan, checkout }: { plan: Plan; checkout: Checkout }) {
                 applePay: "auto",
                 googlePay: "auto",
                 link: "auto",
-                amazonPay: "never",
+                amazonPay: "auto",
                 klarna: "never",
               },
             }}
@@ -249,14 +305,17 @@ function CheckoutForm({ plan, checkout }: { plan: Plan; checkout: Checkout }) {
           type="button"
           className={styles.payButton}
           disabled={!checkout.canConfirm || submitting}
+          data-state={paymentButtonState}
           onClick={() => void confirmPayment()}
         >
           {submitting ? (
             <>
               <LoaderCircle className="size-4 animate-spin" /> Securing payment…
             </>
-          ) : (
+          ) : checkout.canConfirm ? (
             <>Subscribe · {checkout.total.total.amount}</>
+          ) : (
+            <>Complete payment details</>
           )}
         </button>
 

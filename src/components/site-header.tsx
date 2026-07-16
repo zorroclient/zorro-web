@@ -25,9 +25,9 @@ export async function SiteHeader() {
               priority
               className="h-11 w-11 rounded-md ring-1 ring-border/60"
             />
-            <span className="font-heading text-xl tracking-tight">
+            {/* <span className="font-heading text-xl tracking-tight">
               {siteConfig.name}
-            </span>
+            </span> */}
           </Link>
           <nav className="hidden items-center gap-7 md:flex">
             {mainNav.map((item) => (

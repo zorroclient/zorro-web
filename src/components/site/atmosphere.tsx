@@ -216,7 +216,10 @@ export function Atmosphere({
         aria-hidden
         className={`${styles.scan} ${calm ? styles.scanCalm : ""}`}
       />
-      <div aria-hidden className={styles.vignette} />
+      <div
+        aria-hidden
+        className={`${styles.vignette} ${calm ? styles.vignetteCalm : ""}`}
+      />
     </>
   );
 }

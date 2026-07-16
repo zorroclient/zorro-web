@@ -181,30 +181,49 @@
   justify-content: center;
   gap: 0.6rem;
   margin-top: 1.4rem;
-  border: 1px solid #ff7a18;
-  background: #ff7a18;
-  color: #140b07;
+  border: 1px solid rgb(255 255 255 / 0.16);
+  background: #202229;
+  color: rgb(231 233 238 / 0.52);
   font-family: var(--font-mono), ui-monospace, monospace;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  box-shadow: 0 0 28px rgb(255 122 24 / 0.2);
+  box-shadow: none;
   transition:
     background 160ms ease,
     border-color 160ms ease,
+    color 160ms ease,
+    box-shadow 160ms ease,
+    opacity 160ms ease,
     transform 160ms ease;
 }
 
-.payButton:hover:not(:disabled) {
+.payButton[data-state="ready"],
+.payButton[data-state="submitting"] {
+  border-color: #ff7a18;
+  background: #ff7a18;
+  color: #140b07;
+  box-shadow: 0 0 28px rgb(255 122 24 / 0.2);
+}
+
+.payButton[data-state="ready"] {
+  cursor: pointer;
+}
+
+.payButton[data-state="ready"]:hover {
   border-color: #ff9848;
   background: #ff9848;
   transform: translateY(-1px);
 }
 
-.payButton:disabled {
+.payButton[data-state="waiting"] {
   cursor: not-allowed;
-  opacity: 0.48;
+}
+
+.payButton[data-state="submitting"] {
+  cursor: wait;
+  opacity: 0.72;
 }
 
 .error {

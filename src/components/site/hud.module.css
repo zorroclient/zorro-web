@@ -92,6 +92,11 @@
         rgb(0 0 0 / 0.6) 100%
     );
 }
+/* Functional pages keep the vignette on the atmospheric background without
+   dimming checkout controls and other interactive content above it. */
+.vignetteCalm {
+    z-index: 0;
+}
 
 /* ---- shared section scaffolding ---- */
 .wrap {

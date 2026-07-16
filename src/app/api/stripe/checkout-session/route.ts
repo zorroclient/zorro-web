@@ -86,13 +86,15 @@ export async function POST(request: NextRequest) {
 
     // Reuse an open session for this user and plan. This keeps React remounts,
     // refreshes, and impatient double-clicks from generating abandoned carts.
-    const openSessions = await stripe.checkout.sessions.list({
+    // Include completed/expired sessions too so a new idempotency key can be
+    // chained from the customer's most recent checkout attempt.
+    const recentSessions = await stripe.checkout.sessions.list({
       customer: customerId,
-      status: "open",
       limit: 20,
     });
-    const reusable = openSessions.data.find(
+    const reusable = recentSessions.data.find(
       (session) =>
+        session.status === "open" &&
         session.mode === "subscription" &&
         session.ui_mode === "elements" &&
         session.metadata?.supabase_user_id === user.id &&
@@ -120,9 +122,10 @@ export async function POST(request: NextRequest) {
         return_url: `${origin}/checkout/return?session_id={CHECKOUT_SESSION_ID}`,
       },
       {
-        // One create per user/plan/hour at most. The open-session lookup above
-        // normally handles reuse; this key also closes simultaneous races.
-        idempotencyKey: `zorro-elements-${user.id}-${plan.id}-${Math.floor(Date.now() / 3_600_000)}`,
+        // Both sides of a simultaneous race see the same previous session and
+        // therefore use the same key. Once a session completes or expires, its
+        // ID becomes the predecessor for a genuinely fresh checkout.
+        idempotencyKey: `zorro-elements-${user.id}-${plan.id}-after-${recentSessions.data[0]?.id ?? "first"}`,
       },
     );
 
