@@ -62,6 +62,8 @@ export function AuthForm({
 
   const callbackUrl = () =>
     `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectAfterAuth)}`;
+  const emailConfirmationUrl = () =>
+    `${window.location.origin}/auth/confirm?next=${encodeURIComponent(redirectAfterAuth)}`;
 
   async function handleOAuth(provider: Provider) {
     setError(null);
@@ -112,7 +114,7 @@ export function AuthForm({
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
-        options: { emailRedirectTo: callbackUrl() },
+        options: { emailRedirectTo: emailConfirmationUrl() },
       });
       if (error) {
         setError(friendlyAuthError(error.message));

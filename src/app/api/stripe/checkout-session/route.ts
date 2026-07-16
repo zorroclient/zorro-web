@@ -31,6 +31,16 @@ function requestOrigin(request: NextRequest): string {
   return `${forwardedProto ?? request.nextUrl.protocol.replace(":", "")}://${host}`;
 }
 
+function hasReturnOrigin(returnUrl: string | undefined, origin: string): boolean {
+  if (!returnUrl) return false;
+
+  try {
+    return new URL(returnUrl).origin === new URL(origin).origin;
+  } catch {
+    return false;
+  }
+}
+
 function isSameOrigin(request: NextRequest): boolean {
   const origin = request.headers.get("origin");
   if (!origin) return true;
@@ -83,9 +93,12 @@ export async function POST(request: NextRequest) {
   try {
     const stripe = getStripe();
     const customerId = await getOrCreateStripeCustomer(user);
+    const origin = requestOrigin(request);
 
     // Reuse an open session for this user and plan. This keeps React remounts,
     // refreshes, and impatient double-clicks from generating abandoned carts.
+    // Never reuse a session created on another origin: its return URL might
+    // otherwise send a production checkout back to localhost (or vice versa).
     // Include completed/expired sessions too so a new idempotency key can be
     // chained from the customer's most recent checkout attempt.
     const recentSessions = await stripe.checkout.sessions.list({
@@ -99,6 +112,7 @@ export async function POST(request: NextRequest) {
         session.ui_mode === "elements" &&
         session.metadata?.supabase_user_id === user.id &&
         session.metadata?.plan === plan.id &&
+        hasReturnOrigin(session.return_url, origin) &&
         session.client_secret,
     );
 
@@ -106,7 +120,6 @@ export async function POST(request: NextRequest) {
       return response({ clientSecret: reusable.client_secret });
     }
 
-    const origin = requestOrigin(request);
     const session = await stripe.checkout.sessions.create(
       {
         ui_mode: "elements",

@@ -5,7 +5,7 @@ import { safeNextPath } from "@/lib/safe-next-path";
 
 // Email confirmation via token_hash (works cross-device, unlike the PKCE code
 // flow). Point the "Confirm signup" email template at:
-//   {{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email&next=/account
+//   {{ .RedirectTo }}&token_hash={{ .TokenHash }}&type=email
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");
