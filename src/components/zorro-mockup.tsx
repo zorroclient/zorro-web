@@ -65,12 +65,7 @@ function Check({ on, className }: { on: boolean; className?: string }) {
 
 export function ZorroMockup() {
     return (
-        <div className="select-none relative w-full animate-float">
-            <div
-                aria-hidden
-                className="absolute -inset-8 -z-10 rounded-[1rem] bg-[radial-gradient(50%_50%_at_60%_40%,rgb(255_122_24/0.28),transparent)] blur-2xl animate-glow"
-            />
-            <div className="overflow-hidden rounded-md border border-white/10 bg-[#0f1216] font-sans text-[11px] text-white/90 shadow-2xl ring-1 ring-white/5">
+        <div className="select-none w-full bg-[#0b0d11] font-sans text-[11px] text-white/90">
                 {/* toolbar */}
                 <div className="flex items-center justify-between gap-2 border-b border-white/10 px-2 py-2 text-[10px]">
                     <div className="flex items-center gap-2">
@@ -217,7 +212,6 @@ export function ZorroMockup() {
                         </div>
                     </div>
                 </div>
-            </div>
         </div>
     );
 }

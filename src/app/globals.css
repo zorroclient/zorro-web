@@ -42,6 +42,30 @@
     animation: zorro-fade-up 0.7s ease-out both;
 }
 
+
+/* custom scrollbar (new-ui) — subtle brand-tinted thumb */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: rgb(255 122 24 / 0.35) transparent;
+}
+::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: rgb(255 122 24 / 0.3);
+    border-radius: 999px;
+    border: 2px solid transparent;
+    background-clip: content-box;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: rgb(255 122 24 / 0.5);
+    background-clip: content-box;
+}
+
 /* Fractal-noise grain overlay (replaces the grid backdrop) */
 .bg-grain {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
@@ -137,23 +161,25 @@
 }
 
 .dark {
-    --background: oklch(0.145 0 0);
+    /* near-black HUD canvas so header/footer + shadcn primitives match the
+       new surface site-wide */
+    --background: #06070b;
     --foreground: oklch(0.985 0 0);
-    --card: oklch(0.205 0 0);
+    --card: #0c0e13;
     --card-foreground: oklch(0.985 0 0);
-    --popover: oklch(0.205 0 0);
+    --popover: #0c0e13;
     --popover-foreground: oklch(0.985 0 0);
     --primary: #ff7a18;
     --primary-foreground: oklch(0.205 0 0);
     --secondary: oklch(0.969 0 0);
     --secondary-foreground: oklch(0.985 0 0);
-    --muted: oklch(0.269 0 0);
+    --muted: #11141a;
     --muted-foreground: oklch(0.708 0 0);
-    --accent: oklch(0.269 0 0);
+    --accent: #11141a;
     --accent-foreground: oklch(0.985 0 0);
     --destructive: oklch(0.704 0.191 22.216);
-    --border: oklch(1 0 0 / 10%);
-    --input: oklch(1 0 0 / 15%);
+    --border: rgb(255 255 255 / 0.1);
+    --input: rgb(255 255 255 / 0.14);
     --ring: #ff7a18;
     --chart-1: oklch(0.87 0 0);
     --chart-2: oklch(0.556 0 0);

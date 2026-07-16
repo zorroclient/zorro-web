@@ -4,7 +4,7 @@ import { footerNav, siteConfig } from "@/lib/nav";
 export function SiteFooter() {
   return (
     <footer className="border-t border-border/60">
-      <div className="mx-auto flex max-w-6xl flex-col items-center justify-between gap-4 px-4 py-8 sm:flex-row sm:px-6">
+      <div className="mx-auto flex max-w-[76rem] flex-col items-center justify-between gap-4 px-5 py-8 sm:flex-row sm:px-8">
         <p className="text-sm text-muted-foreground">
           © {new Date().getFullYear()} {siteConfig.name}. All rights reserved.
         </p>

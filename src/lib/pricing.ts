@@ -22,20 +22,24 @@ export const plans: Plan[] = [
   {
     id: "biannual",
     name: "6 Months",
-    price: "$120",
+    price: "$135",
     cadence: "per 6 months",
-    note: "≈ $20/mo — save 20%.",
+    note: "≈ $22.50/mo — save 10%.",
     badge: "Most popular",
     featured: true,
   },
   {
     id: "annual",
     name: "1 Year",
-    price: "$210",
+    price: "$240",
     cadence: "per year",
-    note: "≈ $17.50/mo — save 30%.",
+    note: "≈ $20/mo — save 20%.",
   },
 ];
+
+export function getPlan(planId: string | null | undefined): Plan | null {
+  return plans.find((plan) => plan.id === planId) ?? null;
+}
 
 // Every plan unlocks the full product — duration is the only difference.
 export const included = [

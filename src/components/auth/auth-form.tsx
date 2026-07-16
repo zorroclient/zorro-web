@@ -16,10 +16,9 @@ import {
   validateNewPassword,
   friendlyAuthError,
 } from "@/lib/validation";
+import { safeNextPath } from "@/lib/safe-next-path";
 
 type Mode = "login" | "signup";
-
-const REDIRECT_AFTER_AUTH = "/account";
 
 const copy = {
   login: {
@@ -40,9 +39,17 @@ const copy = {
   },
 } as const;
 
-export function AuthForm({ mode }: { mode: Mode }) {
+export function AuthForm({
+  mode,
+  nextPath = "/account",
+}: {
+  mode: Mode;
+  nextPath?: string;
+}) {
   const router = useRouter();
   const t = copy[mode];
+  const redirectAfterAuth = safeNextPath(nextPath);
+  const switchHref = `${t.switchHref}?next=${encodeURIComponent(redirectAfterAuth)}`;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -54,7 +61,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
   const [passwordError, setPasswordError] = useState<string | null>(null);
 
   const callbackUrl = () =>
-    `${window.location.origin}/auth/callback?next=${encodeURIComponent(REDIRECT_AFTER_AUTH)}`;
+    `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectAfterAuth)}`;
 
   async function handleOAuth(provider: Provider) {
     setError(null);
@@ -99,7 +106,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
         setPending(null);
         return;
       }
-      router.push(REDIRECT_AFTER_AUTH);
+      router.push(redirectAfterAuth);
       router.refresh();
     } else {
       const { data, error } = await supabase.auth.signUp({
@@ -114,7 +121,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
       }
       // If email confirmation is on, there's no session yet.
       if (data.session) {
-        router.push(REDIRECT_AFTER_AUTH);
+        router.push(redirectAfterAuth);
         router.refresh();
       } else {
         setNotice("Check your email to confirm your account, then log in.");
@@ -171,6 +178,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
             type="email"
             autoComplete="email"
             value={email}
+            className="rounded-none"
             onChange={(e) => {
               setEmail(e.target.value);
               if (emailError) setEmailError(null);
@@ -210,7 +218,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
                 if (passwordError) setPasswordError(null);
               }}
               disabled={busy}
-              className="pr-10"
+              className="pr-10 rounded-none"
               aria-invalid={passwordError ? true : undefined}
               aria-describedby={passwordError ? "password-error" : undefined}
             />
@@ -264,7 +272,7 @@ export function AuthForm({ mode }: { mode: Mode }) {
 
       <p className="mt-6 text-center text-sm text-muted-foreground">
         {t.switchPrompt}{" "}
-        <Link href={t.switchHref} className="text-brand hover:underline">
+        <Link href={switchHref} className="text-brand hover:underline">
           {t.switchCta}
         </Link>
       </p>
