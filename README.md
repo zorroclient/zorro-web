@@ -1,1 +1,0 @@
-Now i also wanted to customize our stripe payment portal and also add more payment options, like crypto and paypal. for crypto and paypal we would need their API and such because that doesnt go through Stripe, but i think it would be best to first plan this out, maybe look at some docs from stripe aswell first and/or for crypto/paypal aswell.
