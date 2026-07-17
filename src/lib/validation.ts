@@ -27,6 +27,15 @@ export function validateNewPassword(value: string): string | null {
   return null;
 }
 
+export function validatePasswordConfirmation(
+  password: string,
+  confirmation: string,
+): string | null {
+  if (!confirmation) return "Confirm your password.";
+  if (password !== confirmation) return "Passwords do not match.";
+  return null;
+}
+
 // Turn raw Supabase auth errors into something a user can act on.
 export function friendlyAuthError(message: string): string {
   const m = message.toLowerCase();

@@ -7,15 +7,25 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { createClient } from "@/lib/supabase/client";
-import { validateNewPassword, friendlyAuthError } from "@/lib/validation";
+import {
+  validateNewPassword,
+  validatePasswordConfirmation,
+  friendlyAuthError,
+} from "@/lib/validation";
 
 export function UpdatePasswordForm() {
   const router = useRouter();
   const [password, setPassword] = useState("");
+  const [passwordConfirmation, setPasswordConfirmation] = useState("");
   const [showPassword, setShowPassword] = useState(false);
+  const [showPasswordConfirmation, setShowPasswordConfirmation] =
+    useState(false);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
+  const [passwordConfirmationError, setPasswordConfirmationError] = useState<
+    string | null
+  >(null);
   const [done, setDone] = useState(false);
 
   async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -23,8 +33,13 @@ export function UpdatePasswordForm() {
     setError(null);
 
     const passwordErr = validateNewPassword(password);
+    const passwordConfirmationErr = validatePasswordConfirmation(
+      password,
+      passwordConfirmation,
+    );
     setPasswordError(passwordErr);
-    if (passwordErr) return;
+    setPasswordConfirmationError(passwordConfirmationErr);
+    if (passwordErr || passwordConfirmationErr) return;
 
     setPending(true);
     const supabase = createClient();
@@ -63,6 +78,9 @@ export function UpdatePasswordForm() {
                 onChange={(e) => {
                   setPassword(e.target.value);
                   if (passwordError) setPasswordError(null);
+                  if (passwordConfirmationError) {
+                    setPasswordConfirmationError(null);
+                  }
                 }}
                 disabled={pending}
                 className="pr-10"
@@ -95,6 +113,63 @@ export function UpdatePasswordForm() {
             ) : (
               <p className="text-xs text-muted-foreground">
                 At least 8 characters.
+              </p>
+            )}
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="password-confirmation">
+              Confirm new password
+            </Label>
+            <div className="relative">
+              <Input
+                id="password-confirmation"
+                type={showPasswordConfirmation ? "text" : "password"}
+                autoComplete="new-password"
+                value={passwordConfirmation}
+                onChange={(e) => {
+                  setPasswordConfirmation(e.target.value);
+                  if (passwordConfirmationError) {
+                    setPasswordConfirmationError(null);
+                  }
+                }}
+                disabled={pending}
+                className="pr-10"
+                aria-invalid={
+                  passwordConfirmationError ? true : undefined
+                }
+                aria-describedby={
+                  passwordConfirmationError
+                    ? "password-confirmation-error"
+                    : undefined
+                }
+              />
+              <button
+                type="button"
+                onClick={() => setShowPasswordConfirmation((shown) => !shown)}
+                disabled={pending}
+                aria-label={
+                  showPasswordConfirmation
+                    ? "Hide password confirmation"
+                    : "Show password confirmation"
+                }
+                aria-pressed={showPasswordConfirmation}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-muted-foreground transition-colors hover:text-foreground disabled:opacity-50"
+              >
+                {showPasswordConfirmation ? (
+                  <EyeOff className="h-4 w-4" />
+                ) : (
+                  <Eye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
+            {passwordConfirmationError && (
+              <p
+                id="password-confirmation-error"
+                className="text-sm text-destructive"
+                role="alert"
+              >
+                {passwordConfirmationError}
               </p>
             )}
           </div>

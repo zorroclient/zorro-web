@@ -60,6 +60,7 @@ export function ForgotPasswordForm() {
               type="email"
               autoComplete="email"
               value={email}
+              className="rounded-none"
               onChange={(e) => {
                 setEmail(e.target.value);
                 if (emailError) setEmailError(null);
