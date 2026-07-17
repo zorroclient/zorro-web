@@ -63,6 +63,11 @@ export function MobileNav({ items, isLoggedIn }: Props) {
               </SheetClose>
               <SheetClose asChild>
                 <Button asChild variant="outline" className="w-full">
+                  <Link href="/account/devices">Devices</Link>
+                </Button>
+              </SheetClose>
+              <SheetClose asChild>
+                <Button asChild variant="outline" className="w-full">
                   <Link href="/account/download">Download</Link>
                 </Button>
               </SheetClose>

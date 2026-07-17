@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSubscription, getPendingChange } from "@/lib/subscription";
-import { getDeviceBinding } from "@/lib/licensing";
 import { createPortalSession } from "@/lib/billing-actions";
 import { plans } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
@@ -44,9 +43,6 @@ export default async function AccountOverviewPage({
     ? (plans.find((p) => p.id === pending.plan)?.name ?? pending.plan)
     : null;
   const pendingOn = fmtDate(pending?.at ?? null);
-
-  // Device (HWID/IP) binding — display only for now.
-  const device = subscription ? await getDeviceBinding(user.id) : null;
 
   return (
     <div className="space-y-5">
@@ -118,49 +114,6 @@ export default async function AccountOverviewPage({
         )}
       </div>
 
-      {/* Device binding (HWID / IP) — read-only preview; reset wires up with the
-          move to subscription-based activation. */}
-      {subscription && (
-        <div className="border border-white/10 bg-white/[0.025] p-7">
-          <h2 className="font-heading text-lg font-semibold">Device</h2>
-          {device?.bound ? (
-            <div className="mt-3 space-y-1 text-sm">
-              <p>
-                <span className="font-medium text-foreground">
-                  One device linked
-                </span>
-                {device.country && (
-                  <span className="text-muted-foreground">
-                    {" · "}
-                    {device.country}
-                    {device.asn ? ` (${device.asn})` : ""}
-                  </span>
-                )}
-              </p>
-              {fmtDate(device.lastSeenAt) && (
-                <p className="text-muted-foreground">
-                  Last active {fmtDate(device.lastSeenAt)}
-                </p>
-              )}
-            </div>
-          ) : (
-            <p className="mt-3 text-sm text-muted-foreground">
-              No device linked yet — Zorro links to your PC automatically the
-              first time you run it.
-            </p>
-          )}
-
-          <div className="mt-5 flex items-center gap-3">
-            <Button variant="outline" disabled>
-              Reset device binding
-            </Button>
-            <span className="text-xs text-muted-foreground">
-              Unlinks your PC so you can move to a new one · once every 30 days ·
-              coming soon
-            </span>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

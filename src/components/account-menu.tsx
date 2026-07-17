@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LayoutDashboard, Download, LogOut } from "lucide-react";
+import { LayoutDashboard, Monitor, Download, LogOut } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -51,6 +51,12 @@ export function AccountMenu({ email, name, avatarUrl }: Props) {
           <Link href="/account">
             <LayoutDashboard className="h-4 w-4" />
             Account
+          </Link>
+        </DropdownMenuItem>
+        <DropdownMenuItem asChild>
+          <Link href="/account/devices">
+            <Monitor className="h-4 w-4" />
+            Devices
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>

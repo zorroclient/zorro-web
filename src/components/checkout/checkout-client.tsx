@@ -206,74 +206,86 @@ function CheckoutForm({ plan, checkout }: { plan: Plan; checkout: Checkout }) {
           className={`${styles.express} ${expressAvailable === false ? styles.expressHidden : ""}`}
           aria-hidden={expressAvailable === false}
         >
-          <p className={styles.expressLabel}>Fast checkout</p>
-          <ExpressCheckoutElement
-            options={{
-              buttonHeight: 48,
-              buttonTheme: {
-                applePay: "white-outline",
-                googlePay: "black",
-                paypal: "gold",
-              },
-              buttonType: {
-                applePay: "subscribe",
-                googlePay: "subscribe",
-                paypal: "paypal",
-              },
-              layout: { maxColumns: 2, maxRows: 2, overflow: "auto" },
-              paymentMethodOrder: [
-                "paypal",
-                "amazon_pay",
-                "apple_pay",
-                "google_pay",
-                "link",
-              ],
-              paymentMethods: {
-                paypal: "auto",
-                applePay: "auto",
-                googlePay: "auto",
-                link: "auto",
-                amazonPay: "auto",
-                klarna: "never",
-              },
-            }}
-            onReady={(event) =>
-              setExpressAvailable(
-                event.availablePaymentMethods
-                  ? Object.values(event.availablePaymentMethods).some(Boolean)
-                  : false,
-              )
-            }
-            onAvailablePaymentMethodsChange={(event) =>
-              setExpressAvailable(
-                event.paymentMethods
-                  ? Object.values(event.paymentMethods).some(
-                      (method) => method.available,
-                    )
-                  : false,
-              )
-            }
-            onConfirm={async (event) => {
-              setSubmitting(true);
-              setError(null);
-              const result = await checkout.confirm({
-                redirect: "if_required",
-                expressCheckoutConfirmEvent: event,
-              });
-
-              if (result.type === "error") {
-                event.paymentFailed({
-                  reason: "fail",
-                  message: result.error.message,
-                });
-                setError(result.error.message);
-                setSubmitting(false);
-                return;
+          <div className={styles.expressHeader}>
+            <div>
+              <p className={styles.expressLabel}>Express access // secure</p>
+              <p className={styles.expressHint}>
+                Use a saved wallet to authorize your subscription instantly.
+              </p>
+            </div>
+            <span className={styles.expressStatus} aria-live="polite">
+              {expressAvailable === null ? "Scanning" : "Wallet ready"}
+            </span>
+          </div>
+          <div className={styles.expressButtons}>
+            <ExpressCheckoutElement
+              options={{
+                buttonHeight: 55,
+                buttonTheme: {
+                  applePay: "white-outline",
+                  googlePay: "black",
+                  paypal: "black",
+                },
+                buttonType: {
+                  applePay: "subscribe",
+                  googlePay: "subscribe",
+                  paypal: "paypal",
+                },
+                layout: { maxColumns: 2, maxRows: 3, overflow: "auto" },
+                paymentMethodOrder: [
+                  "paypal",
+                  "amazon_pay",
+                  "apple_pay",
+                  "google_pay",
+                  "link",
+                ],
+                paymentMethods: {
+                  paypal: "auto",
+                  applePay: "auto",
+                  googlePay: "auto",
+                  link: "auto",
+                  amazonPay: "auto",
+                  klarna: "never",
+                },
+              }}
+              onReady={(event) =>
+                setExpressAvailable(
+                  event.availablePaymentMethods
+                    ? Object.values(event.availablePaymentMethods).some(Boolean)
+                    : false,
+                )
               }
+              onAvailablePaymentMethodsChange={(event) =>
+                setExpressAvailable(
+                  event.paymentMethods
+                    ? Object.values(event.paymentMethods).some(
+                        (method) => method.available,
+                      )
+                    : false,
+                )
+              }
+              onConfirm={async (event) => {
+                setSubmitting(true);
+                setError(null);
+                const result = await checkout.confirm({
+                  redirect: "if_required",
+                  expressCheckoutConfirmEvent: event,
+                });
 
-              finish(result.session.id);
-            }}
-          />
+                if (result.type === "error") {
+                  event.paymentFailed({
+                    reason: "fail",
+                    message: result.error.message,
+                  });
+                  setError(result.error.message);
+                  setSubmitting(false);
+                  return;
+                }
+
+                finish(result.session.id);
+              }}
+            />
+          </div>
         </div>
 
         {expressAvailable !== false && (

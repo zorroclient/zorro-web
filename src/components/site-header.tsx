@@ -23,7 +23,7 @@ export async function SiteHeader() {
               width={44}
               height={44}
               priority
-              className="h-11 w-11 rounded-md ring-1 ring-border/60"
+              className="h-11 w-11 ring-1 ring-border/60"
             />
             {/* <span className="font-heading text-xl tracking-tight">
               {siteConfig.name}

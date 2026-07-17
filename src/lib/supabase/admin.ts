@@ -10,6 +10,25 @@ type SubscriptionRow = {
   plan: string | null;
   status: string;
   current_period_end: string | null;
+  access_revoked_at: string | null;
+  bound_fingerprint_hash: string | null;
+  device_bound_at: string | null;
+  last_rebind_at: string | null;
+  updated_at: string;
+};
+
+type DeviceRebindResult = {
+  result: "rebound" | "cooldown" | "not_bound" | "inactive" | "not_found";
+  next_rebind_at: string | null;
+  revoked_sessions: number;
+};
+
+type DesktopSessionRow = {
+  id: string;
+  user_id: string;
+  expires_at: string;
+  revoked_at: string | null;
+  revoke_reason: string | null;
   updated_at: string;
 };
 
@@ -45,6 +64,12 @@ export type Database = {
         Update: Partial<SubscriptionRow>;
         Relationships: [];
       };
+      desktop_sessions: {
+        Row: DesktopSessionRow;
+        Insert: Partial<DesktopSessionRow> & { id: string; user_id: string };
+        Update: Partial<DesktopSessionRow>;
+        Relationships: [];
+      };
       app_releases: {
         Row: AppReleaseRow;
         Insert: Partial<AppReleaseRow>;
@@ -59,7 +84,12 @@ export type Database = {
       };
     };
     Views: Record<string, never>;
-    Functions: Record<string, never>;
+    Functions: {
+      rebind_subscription_device: {
+        Args: { p_user_id: string };
+        Returns: DeviceRebindResult[];
+      };
+    };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;
   };
