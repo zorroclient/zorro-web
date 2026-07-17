@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 // NOTE: starting template, not legal advice — have it reviewed before launch.
 const LEGAL_ENTITY = "Zorro"; // TODO: your registered company / sole-trader name
 const CONTACT_EMAIL = "support@zorro.gg"; // TODO: your real support / privacy address
-const EFFECTIVE_DATE = "June 8, 2026";
+const EFFECTIVE_DATE = "July 17, 2026";
 
 export default function PrivacyPage() {
   return (
@@ -51,6 +51,13 @@ export default function PrivacyPage() {
               such as download events, needed to deliver and secure the Service.
             </li>
             <li>
+              <strong>Anonymous analytics and performance data</strong> — page
+              views, referring pages, approximate country, browser and device
+              type, and website performance measurements. These measurements
+              are aggregated and are not associated with an individual visitor
+              or IP address.
+            </li>
+            <li>
               <strong>Technical data</strong> — information sent automatically
               by your device or browser, such as IP address and basic logs, used
               for security and to operate the Service.
@@ -69,6 +76,7 @@ export default function PrivacyPage() {
             <li>
               to secure the Service, prevent abuse, and troubleshoot problems;
             </li>
+            <li>to understand usage and improve website performance;</li>
             <li>to comply with our legal obligations.</li>
           </ul>
         </Section>
@@ -99,8 +107,8 @@ export default function PrivacyPage() {
               management.
             </li>
             <li>
-              <strong>Our hosting provider</strong> — to serve the website and
-              application.
+              <strong>Vercel</strong> — website hosting, anonymous web analytics,
+              and real-user performance measurements through Speed Insights.
             </li>
           </ul>
           <p>
@@ -112,8 +120,10 @@ export default function PrivacyPage() {
         <Section title="6. Cookies">
           <p>
             We use cookies that are strictly necessary to keep you signed in and
-            to operate the Service securely. We do not use them to track you
-            across other websites.
+            to operate the Service securely. Vercel Web Analytics and Speed
+            Insights collect aggregated measurements without third-party
+            advertising cookies, and we do not use cookies to track you across
+            other websites.
           </p>
         </Section>
 

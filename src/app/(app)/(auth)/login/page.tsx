@@ -9,26 +9,9 @@ export const metadata: Metadata = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    next?: string | string[];
-    security?: string | string[];
-  }>;
+  searchParams: Promise<{ next?: string | string[] }>;
 }) {
-  const params = await searchParams;
-  const rawNext = params.next;
+  const rawNext = (await searchParams).next;
   const nextPath = Array.isArray(rawNext) ? rawNext[0] : rawNext;
-  const rawSecurity = params.security;
-  const security = Array.isArray(rawSecurity) ? rawSecurity[0] : rawSecurity;
-  const initialNotice =
-    security === "signed-out"
-      ? "All saved logins and active Zorro sessions were signed out. Reset your password before signing in again if you suspect account theft."
-      : null;
-
-  return (
-    <AuthForm
-      mode="login"
-      nextPath={nextPath}
-      initialNotice={initialNotice}
-    />
-  );
+  return <AuthForm mode="login" nextPath={nextPath} />;
 }

@@ -43,11 +43,9 @@ const copy = {
 export function AuthForm({
   mode,
   nextPath = "/account",
-  initialNotice = null,
 }: {
   mode: Mode;
   nextPath?: string;
-  initialNotice?: string | null;
 }) {
   const router = useRouter();
   const t = copy[mode];
@@ -62,7 +60,7 @@ export function AuthForm({
     useState(false);
   const [pending, setPending] = useState<null | "email" | Provider>(null);
   const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(initialNotice);
+  const [notice, setNotice] = useState<string | null>(null);
   const [emailError, setEmailError] = useState<string | null>(null);
   const [passwordError, setPasswordError] = useState<string | null>(null);
   const [passwordConfirmationError, setPasswordConfirmationError] = useState<

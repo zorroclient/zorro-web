@@ -1,11 +1,8 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { Cpu, Globe2, ShieldAlert, ShieldCheck } from "lucide-react";
+import { Cpu, ShieldCheck } from "lucide-react";
 import { DeviceRebindDialog } from "@/components/account/device-rebind-dialog";
-import { MaskedIpAddress } from "@/components/account/masked-ip-address";
-import { SignOutEverywhereDialog } from "@/components/account/sign-out-everywhere-dialog";
 import { Button } from "@/components/ui/button";
 import { getDeviceBinding } from "@/lib/licensing";
 import { getSubscription } from "@/lib/subscription";
@@ -25,26 +22,6 @@ function formatDate(iso: string | null) {
   }).format(new Date(iso));
 }
 
-function requestIp(requestHeaders: Headers) {
-  const forwarded =
-    requestHeaders.get("x-vercel-forwarded-for") ??
-    requestHeaders.get("x-forwarded-for") ??
-    requestHeaders.get("x-real-ip");
-  const candidate = forwarded?.split(",")[0]?.trim() ?? "";
-
-  if (
-    !candidate ||
-    candidate === "::1" ||
-    candidate.startsWith("127.") ||
-    candidate.length > 45 ||
-    !/^[0-9a-f:.]+$/i.test(candidate)
-  ) {
-    return null;
-  }
-
-  return candidate;
-}
-
 export default async function DevicesPage({
   searchParams,
 }: {
@@ -57,12 +34,8 @@ export default async function DevicesPage({
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const [subscription, requestHeaders] = await Promise.all([
-    getSubscription(user.id),
-    headers(),
-  ]);
+  const subscription = await getSubscription(user.id);
   const device = subscription ? await getDeviceBinding(user.id) : null;
-  const currentIp = requestIp(requestHeaders);
   const boundOn = formatDate(device?.boundAt ?? null);
   const nextRebindOn = formatDate(device?.nextRebindAt ?? null);
 
@@ -110,17 +83,8 @@ export default async function DevicesPage({
           We couldn&apos;t reset the device binding. Please try again shortly.
         </div>
       )}
-      {deviceStatus === "security-error" && (
-        <div
-          role="alert"
-          className="border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
-        >
-          We couldn&apos;t sign every session out. Please try again shortly.
-        </div>
-      )}
-
       {!subscription ? (
-        <div className="border border-white/10 bg-white/[0.025] p-7">
+        <div className="border border-white/10 bg-white/[0.025] p-6">
           <h2 className="font-heading text-lg font-semibold">
             No active subscription
           </h2>
@@ -143,7 +107,7 @@ export default async function DevicesPage({
         </div>
       ) : (
         <div className="grid gap-5 md:grid-cols-2">
-          <section className="border border-white/10 bg-white/[0.025] p-7">
+          <section className="border border-white/10 bg-white/[0.025] p-6">
             <div className="flex items-start justify-between gap-4">
               <div className="flex size-10 items-center justify-center border border-brand/35 bg-brand/10 text-brand">
                 <Cpu aria-hidden="true" className="size-5" />
@@ -165,6 +129,14 @@ export default async function DevicesPage({
                 <dt className="text-muted-foreground">Device allowance</dt>
                 <dd className="font-medium text-foreground">1 PC</dd>
               </div>
+              {device.bound && (
+                <div className="mt-3 flex items-center justify-between gap-4">
+                  <dt className="text-muted-foreground">System</dt>
+                  <dd className="font-mono text-sm text-foreground">
+                    {device.system ?? "Unavailable"}
+                  </dd>
+                </div>
+              )}
               {device.bound && boundOn && (
                 <div className="mt-3 flex items-center justify-between gap-4">
                   <dt className="text-muted-foreground">Linked</dt>
@@ -174,7 +146,7 @@ export default async function DevicesPage({
             </dl>
           </section>
 
-          <section className="border border-white/10 bg-white/[0.025] p-7">
+          <section className="border border-white/10 bg-white/[0.025] p-6">
             <div className="flex size-10 items-center justify-center border border-white/15 bg-white/[0.04] text-foreground">
               <ShieldCheck aria-hidden="true" className="size-5" />
             </div>
@@ -204,38 +176,6 @@ export default async function DevicesPage({
           </section>
         </div>
       )}
-
-      <div className="grid gap-5 md:grid-cols-2">
-        <section className="border border-white/10 bg-white/[0.025] p-7">
-          <div className="flex size-10 items-center justify-center border border-white/15 bg-white/[0.04] text-foreground">
-            <Globe2 aria-hidden="true" className="size-5" />
-          </div>
-          <h2 className="mt-5 font-heading text-lg font-semibold">
-            Current connection
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            The public IP address used by this browser. It is hidden by default
-            and does not lock your subscription to a network or location.
-          </p>
-          <MaskedIpAddress ip={currentIp} />
-        </section>
-
-        <section className="border border-destructive/25 bg-destructive/[0.06] p-7">
-          <div className="flex size-10 items-center justify-center border border-destructive/40 bg-destructive/10 text-destructive">
-            <ShieldAlert aria-hidden="true" className="size-5" />
-          </div>
-          <h2 className="mt-5 font-heading text-lg font-semibold">
-            Think your account was stolen?
-          </h2>
-          <p className="mt-2 text-sm leading-6 text-muted-foreground">
-            End every active Zorro session and revoke saved logins across all
-            browsers and devices. This keeps the current PC binding intact.
-          </p>
-          <div className="mt-6">
-            <SignOutEverywhereDialog />
-          </div>
-        </section>
-      </div>
     </div>
   );
 }
