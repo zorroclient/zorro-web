@@ -3,7 +3,6 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getSubscription, getPendingChange } from "@/lib/subscription";
-import { createPortalSession } from "@/lib/billing-actions";
 import { plans } from "@/lib/pricing";
 import { Button } from "@/components/ui/button";
 
@@ -37,7 +36,7 @@ export default async function AccountOverviewPage({
       : null;
   const renewsOn = fmtDate(subscription?.renewsAt ?? null);
 
-  // Pending portal-initiated change (cancellation or scheduled downgrade).
+  // Pending cancellation or scheduled downgrade, read live from Stripe.
   const pending = subscription ? await getPendingChange(user.id) : null;
   const pendingPlanName = pending?.kind === "switch"
     ? (plans.find((p) => p.id === pending.plan)?.name ?? pending.plan)
@@ -95,11 +94,11 @@ export default async function AccountOverviewPage({
               <Button asChild>
                 <Link href="/account/download">Download Zorro</Link>
               </Button>
-              <form action={createPortalSession}>
-                <Button type="submit" variant="outline">
+              <Button asChild variant="outline">
+                <Link href="/account/billing">
                   Manage subscription
-                </Button>
-              </form>
+                </Link>
+              </Button>
             </div>
           </div>
         ) : (

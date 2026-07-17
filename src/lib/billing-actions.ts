@@ -1,13 +1,16 @@
 "use server";
 
 import { headers } from "next/headers";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
-import { createAdminClient } from "@/lib/supabase/admin";
 import { getStripe } from "@/lib/stripe";
 import { getOrCreateStripeCustomer } from "@/lib/stripe-customer";
 import { priceIdForPlan } from "@/lib/billing";
 import { getSubscription } from "@/lib/subscription";
+import { getOwnedStripeSubscription } from "@/lib/stripe-subscription";
+
+const BILLING_PATH = "/account/billing";
 
 async function originUrl() {
   const h = await headers();
@@ -31,7 +34,7 @@ export async function createCheckoutSession(planId: string) {
   // One subscription per user: if they already have an active plan, don't let
   // them start a second checkout. Stripe has no such toggle — this guard is
   // authoritative (covers the UI being bypassed, e.g. a direct form POST).
-  // They manage/switch plans through the Stripe billing portal instead.
+  // They manage the existing subscription from the account billing page.
   const existingSub = await getSubscription(user.id);
   if (existingSub) redirect("/account?error=already-subscribed");
 
@@ -57,28 +60,91 @@ export async function createCheckoutSession(planId: string) {
   redirect(session.url);
 }
 
-// Opens the Stripe Billing Portal so the user can manage/cancel.
-export async function createPortalSession() {
+async function authenticatedSubscription() {
   const supabase = await createClient();
   const {
     data: { user },
   } = await supabase.auth.getUser();
   if (!user) redirect("/login");
 
-  const admin = createAdminClient();
-  const { data: row } = await admin
-    .from("subscriptions")
-    .select("stripe_customer_id")
-    .eq("user_id", user.id)
-    .maybeSingle();
+  try {
+    return await getOwnedStripeSubscription(user.id);
+  } catch (error) {
+    console.error("Could not load the owned Stripe subscription:", error);
+    redirect(`${BILLING_PATH}?billing=error`);
+  }
+}
 
-  const customerId = row?.stripe_customer_id as string | undefined;
-  if (!customerId) redirect("/pricing");
+export async function scheduleSubscriptionCancellation() {
+  const owned = await authenticatedSubscription();
+  if (!owned) redirect(`${BILLING_PATH}?billing=no-subscription`);
 
-  const origin = await originUrl();
-  const portal = await getStripe().billingPortal.sessions.create({
-    customer: customerId,
-    return_url: `${origin}/account`,
-  });
-  redirect(portal.url);
+  const { subscription } = owned;
+  if (
+    subscription.status === "canceled" ||
+    subscription.status === "incomplete_expired"
+  ) {
+    redirect(`${BILLING_PATH}?billing=unavailable`);
+  }
+
+  if (subscription.cancel_at_period_end || subscription.cancel_at) {
+    redirect(`${BILLING_PATH}?billing=cancellation-scheduled`);
+  }
+
+  try {
+    await getStripe().subscriptions.update(subscription.id, {
+      cancel_at_period_end: true,
+    });
+  } catch (error) {
+    console.error("Scheduling Stripe subscription cancellation failed:", error);
+    redirect(`${BILLING_PATH}?billing=error`);
+  }
+
+  revalidatePath("/account");
+  revalidatePath(BILLING_PATH);
+  redirect(`${BILLING_PATH}?billing=cancellation-scheduled`);
+}
+
+export async function resumeSubscriptionRenewal() {
+  const owned = await authenticatedSubscription();
+  if (!owned) redirect(`${BILLING_PATH}?billing=no-subscription`);
+
+  const { subscription } = owned;
+  if (
+    subscription.status === "canceled" ||
+    subscription.status === "incomplete_expired"
+  ) {
+    redirect(`${BILLING_PATH}?billing=unavailable`);
+  }
+
+  if (!subscription.cancel_at_period_end && !subscription.cancel_at) {
+    redirect(`${BILLING_PATH}?billing=resumed`);
+  }
+
+  try {
+    const scheduleId =
+      typeof subscription.schedule === "string"
+        ? subscription.schedule
+        : subscription.schedule?.id;
+
+    // A schedule with end_behavior=cancel owns its cancel_at value. Switching
+    // it back to release keeps its phases while allowing renewal to continue.
+    if (scheduleId && subscription.cancel_at) {
+      await getStripe().subscriptionSchedules.update(scheduleId, {
+        end_behavior: "release",
+      });
+    }
+
+    await getStripe().subscriptions.update(subscription.id, {
+      cancel_at: null,
+      cancel_at_period_end: false,
+    });
+  } catch (error) {
+    console.error("Resuming Stripe subscription renewal failed:", error);
+    redirect(`${BILLING_PATH}?billing=error`);
+  }
+
+  revalidatePath("/account");
+  revalidatePath(BILLING_PATH);
+  redirect(`${BILLING_PATH}?billing=resumed`);
 }
