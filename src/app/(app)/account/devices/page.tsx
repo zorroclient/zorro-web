@@ -4,6 +4,8 @@ import { redirect } from "next/navigation";
 import { Cpu, ShieldCheck } from "lucide-react";
 import { DeviceRebindDialog } from "@/components/account/device-rebind-dialog";
 import { Button } from "@/components/ui/button";
+import { resetDeviceRebindCooldownForTesting } from "@/lib/device-actions";
+import { canUseDeviceTestControls } from "@/lib/device-test-controls";
 import { getDeviceBinding } from "@/lib/licensing";
 import { getSubscription } from "@/lib/subscription";
 import { createClient } from "@/lib/supabase/server";
@@ -36,6 +38,7 @@ export default async function DevicesPage({
 
   const subscription = await getSubscription(user.id);
   const device = subscription ? await getDeviceBinding(user.id) : null;
+  const testControlsEnabled = canUseDeviceTestControls(user.id);
   const boundOn = formatDate(device?.boundAt ?? null);
   const nextRebindOn = formatDate(device?.nextRebindAt ?? null);
 
@@ -57,6 +60,22 @@ export default async function DevicesPage({
         >
           This device was reset recently. The next available date is shown
           below.
+        </div>
+      )}
+      {deviceStatus === "cooldown-reset" && (
+        <div
+          role="status"
+          className="border border-emerald-400/35 bg-emerald-400/10 p-4 text-sm text-emerald-100"
+        >
+          Testing cooldown cleared. You can reset the linked device again.
+        </div>
+      )}
+      {deviceStatus === "test-control-disabled" && (
+        <div
+          role="alert"
+          className="border border-destructive/40 bg-destructive/10 p-4 text-sm text-destructive"
+        >
+          Device testing controls are not enabled for this account.
         </div>
       )}
       {deviceStatus === "not-bound" && (
@@ -172,6 +191,19 @@ export default async function DevicesPage({
                     ? `Available again ${nextRebindOn}.`
                     : "Device changes are limited to once every 30 days."}
               </p>
+              {testControlsEnabled && device.bound && !device.canRebind && (
+                <form
+                  action={resetDeviceRebindCooldownForTesting}
+                  className="mt-4 border-t border-white/10 pt-4"
+                >
+                  <Button type="submit" variant="ghost" className="h-8 px-2 text-xs">
+                    Reset cooldown (testing)
+                  </Button>
+                  <p className="mt-2 text-[11px] leading-4 text-muted-foreground">
+                    Temporary test control. This does not unlink the current PC.
+                  </p>
+                </form>
+              )}
             </div>
           </section>
         </div>
