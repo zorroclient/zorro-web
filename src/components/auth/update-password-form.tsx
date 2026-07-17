@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,18 +56,30 @@ export function UpdatePasswordForm() {
   }
 
   return (
-    <div className="rounded-2xl border border-border/60 bg-card/40 p-7">
-      <h2 className="font-heading text-lg font-semibold">Set a new password</h2>
-      <p className="mt-2 text-sm text-muted-foreground">
-        Choose a new password for your account.
-      </p>
+    <div className="w-full max-w-sm">
+      <div className="text-center">
+        <p className="font-mono text-[11px] uppercase tracking-[0.2em] text-brand">
+          Recovery mode // secure
+        </p>
+        <h1 className="mt-3 text-2xl font-bold sm:text-3xl">
+          Set a new password
+        </h1>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Choose a new password for your Zorro account.
+        </p>
+      </div>
 
       {done ? (
-        <p className="mt-5 text-sm text-brand" role="status">
-          Your password has been updated.
-        </p>
+        <div className="mt-8 border-l-2 border-brand bg-brand/10 p-4">
+          <p className="text-sm text-brand" role="status">
+            Your password has been updated.
+          </p>
+          <Button asChild size="lg" className="mt-5 w-full">
+            <Link href="/account">Continue to your account</Link>
+          </Button>
+        </div>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-5 space-y-4" noValidate>
+        <form onSubmit={handleSubmit} className="mt-8 space-y-4" noValidate>
           <div className="space-y-2">
             <Label htmlFor="password">New password</Label>
             <div className="relative">
@@ -83,7 +96,7 @@ export function UpdatePasswordForm() {
                   }
                 }}
                 disabled={pending}
-                className="pr-10"
+                className="rounded-none pr-10"
                 aria-invalid={passwordError ? true : undefined}
                 aria-describedby={passwordError ? "password-error" : undefined}
               />
@@ -134,7 +147,7 @@ export function UpdatePasswordForm() {
                   }
                 }}
                 disabled={pending}
-                className="pr-10"
+                className="rounded-none pr-10"
                 aria-invalid={
                   passwordConfirmationError ? true : undefined
                 }
@@ -180,7 +193,12 @@ export function UpdatePasswordForm() {
             </p>
           )}
 
-          <Button type="submit" size="lg" disabled={pending}>
+          <Button
+            type="submit"
+            size="lg"
+            className="w-full"
+            disabled={pending}
+          >
             {pending ? "Saving…" : "Update password"}
           </Button>
         </form>
