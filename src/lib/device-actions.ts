@@ -4,6 +4,7 @@ import "server-only";
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { canUseDeviceTestControls } from "@/lib/device-test-controls";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 
@@ -42,4 +43,35 @@ export async function rebindDevice() {
     default:
       redirect(`${DEVICES_PATH}?device=error`);
   }
+}
+
+export async function resetDeviceRebindCooldownForTesting() {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) redirect("/login");
+
+  if (!canUseDeviceTestControls(user.id)) {
+    redirect(`${DEVICES_PATH}?device=test-control-disabled`);
+  }
+
+  const admin = createAdminClient();
+  const { data, error } = await admin
+    .from("subscriptions")
+    .update({
+      last_rebind_at: null,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("user_id", user.id)
+    .select("user_id")
+    .maybeSingle();
+
+  if (error || !data) {
+    console.error("Device cooldown test reset failed:", error);
+    redirect(`${DEVICES_PATH}?device=error`);
+  }
+
+  revalidatePath(DEVICES_PATH);
+  redirect(`${DEVICES_PATH}?device=cooldown-reset`);
 }
