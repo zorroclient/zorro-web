@@ -1,50 +1,63 @@
-// Read-only view of a user's current device (HWID/IP) binding for the account
-// page. Reads the live `license_activations` row with the service-role client
-// (RLS-restricted table). This is presentation-only for now — the actual reset
-// + auto-bind-on-purchase lands when key activation moves to subscription auth.
-import { createAdminClient } from "@/lib/supabase/admin";
+import "server-only";
+
+// Read-only, presentation-safe view of the subscription device binding. The
+// fingerprint itself never leaves the server; the account page only needs to
+// know whether a device is bound and when rebinding is available.
+import { createClient } from "@/lib/supabase/server";
+
+const REBIND_COOLDOWN_MS = 30 * 24 * 60 * 60 * 1000;
 
 export type DeviceBinding = {
   bound: boolean;
-  lastSeenAt: string | null;
-  activatedAt: string | null;
-  country: string | null;
-  asn: string | null;
+  boundAt: string | null;
+  lastRebindAt: string | null;
+  nextRebindAt: string | null;
+  canRebind: boolean;
 };
 
 export async function getDeviceBinding(
   userId: string,
 ): Promise<DeviceBinding | null> {
   try {
-    const admin = createAdminClient();
-    const { data } = await admin
-      .from("license_activations")
-      .select("fingerprint_hash, first_asn, first_country, activated_at, last_seen_at")
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("subscriptions")
+      .select(
+        "bound_fingerprint_hash, device_bound_at, last_rebind_at",
+      )
       .eq("user_id", userId)
-      .is("revoked_at", null)
-      .order("activated_at", { ascending: false })
-      .limit(1)
       .maybeSingle();
 
-    // license_activations isn't in the generated DB types, so the row comes
-    // back untyped — narrow it here.
+    if (error) throw error;
+
     const row = data as {
-      fingerprint_hash: string | null;
-      first_asn: string | null;
-      first_country: string | null;
-      activated_at: string | null;
-      last_seen_at: string | null;
+      bound_fingerprint_hash: string | null;
+      device_bound_at: string | null;
+      last_rebind_at: string | null;
     } | null;
     if (!row) return null;
 
+    const lastRebindTime = row.last_rebind_at
+      ? Date.parse(row.last_rebind_at)
+      : Number.NaN;
+    const nextRebindTime = Number.isFinite(lastRebindTime)
+      ? lastRebindTime + REBIND_COOLDOWN_MS
+      : null;
+    const bound = Boolean(row.bound_fingerprint_hash);
+
     return {
-      bound: Boolean(row.fingerprint_hash),
-      lastSeenAt: row.last_seen_at,
-      activatedAt: row.activated_at,
-      country: row.first_country,
-      asn: row.first_asn,
+      bound,
+      boundAt: row.device_bound_at,
+      lastRebindAt: row.last_rebind_at,
+      nextRebindAt:
+        nextRebindTime === null
+          ? null
+          : new Date(nextRebindTime).toISOString(),
+      canRebind:
+        bound && (nextRebindTime === null || nextRebindTime <= Date.now()),
     };
-  } catch {
+  } catch (error) {
+    console.error("getDeviceBinding failed:", error);
     return null;
   }
 }
