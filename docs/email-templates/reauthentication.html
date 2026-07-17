@@ -1,47 +1,46 @@
 <!--
   Supabase → Authentication → Email Templates → "Reauthentication"
-  Paste this whole file as the template body. This one delivers a 6-digit code
-  ({{ .Token }}) the user types back in — there is no link.
-  Brand: dark surface + #ff7a18. Inline styles + tables for email-client support.
+  Paste this whole file as the template body. Delivers the 6-digit {{ .Token }}
+  that the user types back into the app; there is no verification link.
 -->
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-  <body style="margin:0; padding:0; background-color:#0b0d10;">
-    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#0b0d10;">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="color-scheme" content="dark" />
+    <title>Your Zorro verification code</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#06070b; color:#f5f7fa;">
+    <div style="display:none; max-height:0; overflow:hidden; opacity:0; color:transparent;">Use this one-time code to confirm the action on your Zorro account.</div>
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#06070b" style="background-color:#06070b;">
       <tr>
-        <td align="center" style="padding:32px 16px;">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:480px; background-color:#14181d; border:1px solid rgba(255,255,255,0.08); border-radius:16px;">
+        <td align="center" style="padding:36px 16px;">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#0c0e13" style="max-width:560px; background-color:#0c0e13; border:1px solid #252a33;">
+            <tr><td style="height:3px; background-color:#ff7a18; font-size:0; line-height:0;">&nbsp;</td></tr>
             <tr>
-              <td style="padding:32px 32px 0 32px;">
-                <div style="font-family:'Space Grotesk',Arial,Helvetica,sans-serif; font-size:20px; font-weight:700; letter-spacing:0.04em; color:#ffffff;">
-                  <span style="color:#ff7a18;">&#9679;</span>&nbsp; ZORRO
-                </div>
+              <td style="padding:28px 30px 0 30px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td width="42" height="42" align="center" valign="middle" style="width:42px; height:42px; border:1px solid #ff7a18; background-color:#050609;"><img src="{{ .SiteURL }}/brand/zorro-mark.png" width="40" height="40" alt="Zorro" style="display:block; width:40px; height:40px; border:0;" /></td><td style="padding-left:14px;"><div style="font-family:Arial,Helvetica,sans-serif; font-size:18px; font-weight:800; letter-spacing:0.16em; color:#ffffff;">ZORRO</div><div style="margin-top:4px; font-family:'Courier New',Courier,monospace; font-size:10px; letter-spacing:0.14em; color:#747d89;">CLIENT ACCESS // AUTH</div></td><td align="right" valign="middle" style="font-family:'Courier New',Courier,monospace; font-size:10px; letter-spacing:0.1em; color:#ff7a18;">● VERIFY</td></tr></table>
               </td>
             </tr>
             <tr>
-              <td style="padding:24px 32px 0 32px;">
-                <h1 style="margin:0; font-family:'Space Grotesk',Arial,Helvetica,sans-serif; font-size:24px; line-height:1.25; color:#ffffff;">Confirm it's you</h1>
-                <p style="margin:12px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.6; color:#9aa3ad;">
-                  Enter this code to confirm the action on your Zorro account. It expires shortly.
-                </p>
+              <td style="padding:28px 30px 0 30px;">
+                <div style="border-top:1px solid #252a33; padding-top:26px; font-family:'Courier New',Courier,monospace; font-size:11px; font-weight:700; letter-spacing:0.14em; color:#ff7a18;">SECURITY CHECK // 05</div>
+                <h1 style="margin:13px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:30px; line-height:1.15; letter-spacing:-0.03em; color:#ffffff;">Confirm it’s you.</h1>
+                <p style="margin:14px 0 0 0; font-family:Arial,Helvetica,sans-serif; font-size:15px; line-height:1.7; color:#a1a8b2;">Enter this one-time code in Zorro to authorize the requested account action. It expires shortly.</p>
               </td>
             </tr>
             <tr>
-              <td style="padding:28px 32px 0 32px;">
-                <div style="font-family:'Space Grotesk',Arial,Helvetica,monospace; font-size:34px; font-weight:700; letter-spacing:0.32em; color:#ff7a18; background-color:#0b0d10; border:1px solid rgba(255,122,24,0.4); border-radius:12px; padding:18px 0; text-align:center;">
-                  {{ .Token }}
-                </div>
+              <td style="padding:26px 30px 0 30px;">
+                <table role="presentation" width="100%" cellpadding="0" cellspacing="0" bgcolor="#090b0f" style="background-color:#090b0f; border:1px solid #ff7a18;">
+                  <tr><td align="center" style="padding:14px 10px 4px 10px; font-family:'Courier New',Courier,monospace; font-size:10px; font-weight:700; letter-spacing:0.14em; color:#747d89;">VERIFICATION CODE</td></tr>
+                  <tr><td align="center" style="padding:6px 10px 18px 10px; font-family:'Courier New',Courier,monospace; font-size:36px; line-height:1.2; font-weight:700; letter-spacing:0.28em; color:#ff7a18;">{{ .Token }}</td></tr>
+                </table>
               </td>
             </tr>
-            <tr>
-              <td style="padding:28px 32px 32px 32px;">
-                <hr style="border:none; border-top:1px solid rgba(255,255,255,0.08); margin:0 0 16px 0;" />
-                <p style="margin:0; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.6; color:#5b636d;">
-                  You're receiving this because a sensitive action was requested on your Zorro account. If that wasn't you, ignore this and consider resetting your password.
-                </p>
-              </td>
-            </tr>
+            <tr><td style="padding:24px 30px 30px 30px;"><p style="margin:0; border-left:2px solid #ff7a18; padding-left:12px; font-family:Arial,Helvetica,sans-serif; font-size:12px; line-height:1.65; color:#747d89;">Never share this code. If you didn’t request it, ignore this transmission and consider resetting your password.</p></td></tr>
           </table>
+          <p style="margin:16px 0 0 0; font-family:'Courier New',Courier,monospace; font-size:10px; letter-spacing:0.11em; color:#4f5661;">ZORROCLIENT.COM // AUTOMATED TRANSMISSION</p>
         </td>
       </tr>
     </table>
