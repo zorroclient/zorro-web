@@ -9,6 +9,7 @@ import { getOrCreateStripeCustomer } from "@/lib/stripe-customer";
 import { priceIdForPlan } from "@/lib/billing";
 import { getSubscription } from "@/lib/subscription";
 import { getOwnedStripeSubscription } from "@/lib/stripe-subscription";
+import { getResumeSubscriptionOperation } from "@/lib/subscription-cancellation";
 
 const BILLING_PATH = "/account/billing";
 
@@ -122,23 +123,23 @@ export async function resumeSubscriptionRenewal() {
   }
 
   try {
-    const scheduleId =
-      typeof subscription.schedule === "string"
-        ? subscription.schedule
-        : subscription.schedule?.id;
-
-    // A schedule with end_behavior=cancel owns its cancel_at value. Switching
-    // it back to release keeps its phases while allowing renewal to continue.
-    if (scheduleId && subscription.cancel_at) {
-      await getStripe().subscriptionSchedules.update(scheduleId, {
-        end_behavior: "release",
-      });
-    }
-
-    await getStripe().subscriptions.update(subscription.id, {
-      cancel_at: null,
-      cancel_at_period_end: false,
+    const operation = getResumeSubscriptionOperation({
+      cancelAtPeriodEnd: subscription.cancel_at_period_end,
+      cancelAt: subscription.cancel_at,
+      scheduleId:
+        typeof subscription.schedule === "string"
+          ? subscription.schedule
+          : (subscription.schedule?.id ?? null),
     });
+
+    if (operation.kind === "subscription") {
+      await getStripe().subscriptions.update(subscription.id, operation.params);
+    } else if (operation.kind === "schedule") {
+      await getStripe().subscriptionSchedules.update(
+        operation.scheduleId,
+        operation.params,
+      );
+    }
   } catch (error) {
     console.error("Resuming Stripe subscription renewal failed:", error);
     redirect(`${BILLING_PATH}?billing=error`);
